@@ -27,7 +27,7 @@ abstract class Media implements iMedia
 
 	public static function createFromFile(File $File)
 	{
-		if( !$File->isReadable() )
+		if( !$File->reads() )
 		{
 			throw new MediaException("File not readable: \"" . $File . "\"");
 			return false;

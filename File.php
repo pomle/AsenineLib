@@ -188,7 +188,7 @@ class File implements iFile
 		}
 		elseif(!isset($File->fileID))
 		{
-			$query = DB::prepareQuery("SELECT ID FROM Asenien_Files WHERE hash = %s", $File->getHash());
+			$query = DB::prepareQuery("SELECT ID FROM Asenine_Files WHERE hash = %s", $File->getHash());
 			$File->fileID = DB::queryAndFetchOne($query);
 		}
 
@@ -274,6 +274,11 @@ class File implements iFile
 		return true;
 	}
 
+	public function exists()
+	{
+		return file_exists($this->location);
+	}
+
 	public function link($at)
 	{
 		if( !symlink($this->location, $at) )
@@ -293,6 +298,11 @@ class File implements iFile
 		$this->location = $to;
 
 		return true;
+	}
+
+	public function getContents()
+	{
+		return file_get_contents($this->location);
 	}
 
 	public function getExtension()
@@ -348,17 +358,12 @@ class File implements iFile
 		return $this->size;
 	}
 
-	public function isExisting()
-	{
-		return file_exists($this->location);
-	}
-
-	public function isReadable()
+	public function reads()
 	{
 		return is_readable($this->location);
 	}
 
-	public function isWriteable()
+	public function writes()
 	{
 		return is_writeable($this->location);
 	}
