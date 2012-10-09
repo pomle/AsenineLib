@@ -144,7 +144,7 @@ abstract class Media implements iMedia
 
 		$result = DB::queryAndFetchResult($query);
 
-		$Archiver = getArchiver();
+		$Archiver = new Archiver(ASENINE_DIR_MEDIA_SOURCE);
 
 		while($media = DB::assoc($result))
 		{
