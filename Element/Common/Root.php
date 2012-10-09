@@ -58,15 +58,12 @@ abstract class Root implements iRoot
 		return $this->addAttr('data-' . $prefix, $content);
 	}
 
-	public function addID($ID)
+	public function addID($string)
 	{
-		return $this->addAttr('id', $ID);
-	}
+		$this
+			->removeAttr('id')
+			->addAttr('id', $string);
 
-	public function addIDs($array)
-	{
-		foreach(is_array($array) ? $array : func_get_args() as $id)
-			$this->addID($id);
 		return $this;
 	}
 
@@ -86,9 +83,15 @@ abstract class Root implements iRoot
 		return $this->ensureAttr('class', $class, $state);
 	}
 
-	public function hasAttr($key, $value)
+	public function hasAttr($key, $value = null)
 	{
-		return isset($this->attributes[$key]) && in_array($value, $this->attributes[$key]);
+		if(!isset($this->attributes[$key]))
+			return false;
+
+		if($value && !in_array($value, $this->attributes[$key]))
+			return false;
+
+		return true;
 	}
 
 	public function hasClass($class)
@@ -96,9 +99,9 @@ abstract class Root implements iRoot
 		return $this->hasAttr('class', $class);
 	}
 
-	public function hasID($ID)
+	public function hasID($string = null)
 	{
-		return $this->hasAttr('id', $ID);
+		return $this->hasAttr('id', $string);
 	}
 
 	public function getAttributes()
