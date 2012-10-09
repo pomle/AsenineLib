@@ -9,7 +9,7 @@ class VideoStrip extends \Asenine\Media\Generator
 		$tempFiles;
 
 
-	public function __construct(\Media\Common\Visual $Media, $numFrames = 10, $boundingBox = 200)
+	public function __construct(\Asenine\Media\Type\_Visual $Media, $numFrames = 10, $boundingBox = 200)
 	{
 		$this->Media = $Media;
 
@@ -44,7 +44,7 @@ class VideoStrip extends \Asenine\Media\Generator
 
 	public function saveToFile($outFile)
 	{
-		$ImageGuru = new \App\ImageGuru();
+		$ImageGuru = new \Asenine\App\ImageGuru();
 
 		foreach($this->frames as $frame)
 		{
