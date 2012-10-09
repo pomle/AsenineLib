@@ -182,7 +182,7 @@ class ImageGuru extends Common\Root
 		$options[] = '-colorspace RGB'; // We don't do CMYK
 		$options[] = '-strip'; // Strips all metadata from graphics
 
-		if( self::doConvert($this->inputFiles, $tempFile, $options, $this->format ?: 'JPG') && rename($tempFile, $outFile) )
+		if( self::doConvert($this->inputFiles, $tempFile, $options, isset($this->format) ? $this->format : 'JPG') && rename($tempFile, $outFile) )
 		{
 			chmod($outFile, FILE_CREATE_PERMS);
 			return true;
