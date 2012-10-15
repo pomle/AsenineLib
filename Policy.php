@@ -19,7 +19,7 @@ class Policy
 
 	public static function loadByName($policy)
 	{
-		$query = DB::prepareQuery("SELECT ID FROM Asenine_Policies WHERE policy = %s", $policy);
+		$query = DB::prepareQuery("SELECT ID FROM asenine_policies WHERE policy = %s", $policy);
 
 		if($policyID = DB::queryAndFetchOne($query))
 		{
@@ -35,8 +35,8 @@ class Policy
 	public static function saveToDB(self $Policy)
 	{
 		$query = DB::prepareQuery("INSERT INTO
-			Asenine_Policies (
-				ID,
+			asenine_policies (
+				id,
 				policy,
 				description
 			) VALUES(NULLIF(%d, 0), %s, %s)

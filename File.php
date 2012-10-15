@@ -22,6 +22,42 @@ class File implements iFile
 		$name;
 
 
+	public static function createInDB(self $File)
+	{
+		$timeCreated = $timeModified = time();
+
+		$query = DB::prepareQuery("SELECT id FROM asenine_files WHERE hash = %s", $File->getHash());
+		if(!$File->fileID = (int)DB::queryAndFetchOne($query))
+		{
+			$query = DB::prepareQuery("INSERT INTO
+				asenine_files (
+					time_created,
+					time_modified,
+					hash,
+					size,
+					mime,
+					ext
+				) VALUES (
+					%u,
+					%u,
+					%s,
+					%u,
+					NULLIF(%s, ''),
+					NULLIF(%s, '')
+				)",
+				$timeCreated,
+				$timeModified,
+				$File->getHash(),
+				$File->getSize(),
+				$File->getMime(),
+				$File->getExtension());
+
+			$File->fileID = (int)DB::queryAndGetID($query, 'asenine_files_id_seq');
+			$File->timeCreated = $timeCreated;
+			$File->timeModified = $timeModified;
+		}
+	}
+
 	public static function fromURL($fromURL, $toFile = null)
 	{
 		$d = $s = null;
@@ -101,24 +137,24 @@ class File implements iFile
 		$files = array_fill_keys($fileIDs, false);
 
 		$query = DB::prepareQuery("SELECT
-				ID AS fileID,
-				timeCreated,
-				timeModified,
+				id AS file_id,
+				time_created,
+				time_modified,
 				hash,
 				size,
 				mime,
 				ext
 			FROM
-				Asenine_Files
+				asenine_files
 			WHERE
-				ID IN %a",
+				id IN %a",
 			$fileIDs);
 
 		$result = DB::fetch($query);
 
 		while($file = DB::assoc($result))
 		{
-			$fileID = (int)$file['fileID'];
+			$fileID = (int)$file['file_id'];
 
 			$fileLocation = $Archiver->getFileLocation($file['hash']);
 
@@ -132,8 +168,8 @@ class File implements iFile
 
 			$File->extension = $file['ext'];
 
-			$File->timeCreated = (int)$file['timeCreated'] ?: null;
-			$File->timeModified = (int)$file['timeModified'] ?: null;
+			$File->timeCreated = (int)$file['time_created'] ?: null;
+			$File->timeModified = (int)$file['time_modified'] ?: null;
 			$File->fileID = $fileID;
 
 			$files[$fileID] = $File;
@@ -144,7 +180,7 @@ class File implements iFile
 
 	public static function removeFromDB(self $File)
 	{
-		$query = DB::prepareQuery("DELETE FROM Asenine_Files WHERE ID = %u", $File->fileID);
+		$query = DB::prepareQuery("DELETE FROM asenine_files WHERE ID = %u", $File->fileID);
 		DB::queryAndCountAffected($query);
 		return true;
 	}
@@ -153,48 +189,26 @@ class File implements iFile
 	{
 		$timeCreated = $timeModified = time();
 
-		$query = DB::prepareQuery("INSERT INTO
-			Asenine_Files (
-				ID,
-				timeCreated,
-				timeModified,
-				hash,
-				size,
-				mime,
-				ext
-			) VALUES (
-				NULLIF(%d, 0),
-				%u,
-				%u,
-				%s,
-				%u,
-				NULLIF(%s, ''),
-				NULLIF(%s, '')
-			) ON DUPLICATE KEY UPDATE
-				timeModified = VALUES(timeModified),
-				mime = VALUES(mime)",
-			$File->fileID,
-			$timeCreated,
-			$timeModified,
-			$File->getHash(),
-			$File->getSize(),
-			$File->getMime(),
-			$File->getExtension());
+		### Try find the file on hash first, and set it's ID
+		if(!isset($File->fileID))
+		{
+			self::createInDB($File);
+		}
 
-		if($fileID = (int)DB::queryAndGetID($query))
-		{
-			$File->timeCreated = $timeCreated;
-			$File->fileID = $fileID;
-		}
-		elseif(!isset($File->fileID))
-		{
-			$query = DB::prepareQuery("SELECT ID FROM Asenine_Files WHERE hash = %s", $File->getHash());
-			$File->fileID = DB::queryAndFetchOne($query);
-		}
+		$query = DB::prepareQuery("UPDATE
+				asenine_files
+			SET
+				time_modified = %d,
+				mime = NULLIF(%s, '')
+			WHERE
+				id = %d",
+			$timeModified,
+			$File->getMime(),
+			$File->fileID);
+
+		DB::queryAndCountAffected($query);
 
 		$File->timeModified = $timeModified;
-
-		return true;
 	}
 
 

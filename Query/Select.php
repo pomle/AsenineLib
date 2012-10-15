@@ -33,7 +33,7 @@ class Select
 		if( isset($this->limit) || $this->enforceLimit !== false )
 		{
 			$limit = min($this->limit, $this->enforceLimit ?: $this->limit);
-			$query .= sprintf(' LIMIT %u,%u', $this->offset, $limit);
+			$query .= sprintf(' OFFSET %u LIMIT %u', $this->offset, $limit);
 		}
 
 		return $query;

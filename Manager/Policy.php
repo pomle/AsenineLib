@@ -8,7 +8,7 @@ class Policy extends Common\DB
 		$policies = array();
 
 		$query = \DB::prepareQuery("SELECT
-				p.ID AS policyID,
+				p.id AS policy_id,
 				p.policy,
 				p.description
 			FROM
@@ -22,7 +22,7 @@ class Policy extends Common\DB
 		{
 			$Policy = new \stdClass();
 
-			$Policy->policyID = (int)$policy['policyID'];
+			$Policy->policyID = (int)$policy['policy_id'];
 			$Policy->policy = $policy['policy'];
 			$Policy->name = $Policy->policy;
 			$Policy->description = $policy['description'];

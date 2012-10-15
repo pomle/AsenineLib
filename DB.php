@@ -64,12 +64,19 @@ class DB
 		$vars = func_get_args();
 		$query = array_shift($vars);
 
-		$query = str_replace('||', defined('DEFAULT_COLLATION') ? constant('DEFAULT_COLLATION') : 'utf8_general_ci', $query);
+		if(defined('DEFAULT_COLLATION'))
+		{
+			$query = str_replace('||', constant('DEFAULT_COLLATION'), $query);
+		}
+		else
+		{
+			 $query = str_replace('COLLATE ||', '', $query);
+		}
 
 		self::$vars = $vars;
 		self::$varIterator = 0;
 
-		$query = preg_replace_callback('/%([AaduFfSs])/', array('self', 'prepareVariable'), $query);
+		$query = preg_replace_callback('/%([AabduFfSs])/', array('self', 'prepareVariable'), $query);
 
 		self::$vars = null;
 
@@ -95,10 +102,16 @@ class DB
 				$var = array_map(array('self', 'escapeString'), $var);
 				return "('" . join("','", $var) . "')";
 
+			### Boolean
+			case 'b':
+				return $var ? 'true' : 'false';
+
+
 			### Signed integer
 			case 'd':
 				return sprintf('%d', $var);
 
+			### Unsigned integer
 			case 'u':
 				return sprintf('%u', $var);
 
@@ -176,10 +189,10 @@ class DB
 		return self::query($query, false);
 	}
 
-	public static function queryAndGetID($query)
+	public static function queryAndGetID($query, $ref = null)
 	{
 		if( $Stmt = self::queryAndFetchResult($query) )
-			return self::$PDO->lastInsertId();
+			return self::$PDO->lastInsertId($ref);
 
 		return false;
 	}

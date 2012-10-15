@@ -17,7 +17,7 @@ class Operation
 		$currentPasswordHash = User::createHash($currentPassword, $crypto);
 		$newPasswordHash = User::createHash($newPassword, $crypto);
 
-		$query = DB::prepareQuery("SELECT COUNT(*) FROM Asenine_Users WHERE ID = %u AND passwordHash = %s", $userID, $currentPasswordHash);
+		$query = DB::prepareQuery("SELECT COUNT(*) FROM asenine_users WHERE ID = %u AND password_hash = %s", $userID, $currentPasswordHash);
 		$res = (int)DB::queryAndFetchOne($query);
 
 		if( $res !== 1 )
@@ -44,7 +44,7 @@ class Operation
 		if( (isset($minLen) && $usernameLen < $minLen) || (isset($maxLen) && $usernameLen > $maxLen) )
 			throw New \Exception(sprintf(_('Username lenght invalid. Must consist of between %u and %u characters.'), $minLen, $maxLen));
 
-		$query = DB::prepareQuery("SELECT COUNT(*) FROM Asenine_Users WHERE username = %s AND NOT ID = %u", $username, $discountUserID);
+		$query = DB::prepareQuery("SELECT COUNT(*) FROM asenine_users WHERE username = %s AND NOT ID = %u", $username, $discountUserID);
 		if( (bool)DB::queryAndFetchOne($query) )
 			throw New \Exception(sprintf(_('The username "%s" is already taken'), $username));
 	}

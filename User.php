@@ -103,19 +103,19 @@ class User
 		$timeCreated = time();
 
 		$query = DB::prepareQuery("INSERT INTO
-			Asenine_Users (
-				ID,
-				isEnabled,
-				timeCreated,
+			asenine_users (
+				is_enabled,
+				time_created,
+				time_modified,
 				username
 			) VALUES(
-				NULL,
-				0,
+				false,
+				%u,
 				%u,
 				NULL)",
 			$timeCreated);
 
-		if( $userID = (int)DB::queryAndGetID($query) )
+		if( $userID = (int)DB::queryAndGetID($query, 'asenine_users_id_seq') )
 		{
 			$User->userID = (int)$userID;
 			$User->timeCreated = $timeCreated;
@@ -139,23 +139,23 @@ class User
 		$users = array_fill_keys($userIDs, false);
 
 		$query = DB::prepareQuery("SELECT
-				u.ID AS userID,
-				u.isEnabled,
-				u.isAdministrator,
-				u.timeAutoLogout,
-				u.timeCreated,
-				u.timeModified,
-				u.timeLastLogin,
-				u.timePasswordLastChange,
-				u.countLoginsSuccessful,
-				u.countLoginsFailed,
-				u.countLoginsFailedStreak,
+				u.id AS user_id,
+				u.is_enabled,
+				u.is_administrator,
+				u.time_auto_logout,
+				u.time_created,
+				u.time_modified,
+				u.time_last_login,
+				u.time_password_last_change,
+				u.count_logins_successful,
+				u.count_logins_failed,
+				u.count_logins_failed_streak,
 				u.username,
 				u.fullname,
 				u.phone,
 				u.email
 			FROM
-				Asenine_Users u
+				asenine_users u
 			WHERE
 				u.ID IN %a", $userIDs);
 
@@ -163,22 +163,22 @@ class User
 
 		while($user = DB::assoc($result))
 		{
-			$userID = (int)$user['userID'];
+			$userID = (int)$user['user_id'];
 
 			$User = new static($userID);
 
-			$User->isEnabled = (bool)$user['isEnabled'];
-			$User->isAdministrator = (bool)$user['isAdministrator'];
+			$User->isEnabled = (bool)$user['is_enabled'];
+			$User->isAdministrator = (bool)$user['is_administrator'];
 			$User->username = $user['username'];
-			$User->timeAutoLogout = (int)$user['timeAutoLogout'] ?: null;
-			$User->timeCreated = (int)$user['timeCreated'] ?: null;
-			$User->timeModified = (int)$user['timeModified'] ?: null;
-			$User->timeLastLogin = (int)$user['timeLastLogin'] ?: null;
-			$User->timePasswordLastChange = (int)$user['timePasswordLastChange'] ?: null;
+			$User->timeAutoLogout = (int)$user['time_auto_logout'] ?: null;
+			$User->timeCreated = (int)$user['time_created'] ?: null;
+			$User->timeModified = (int)$user['time_modified'] ?: null;
+			$User->timeLastLogin = (int)$user['time_last_login'] ?: null;
+			$User->timePasswordLastChange = (int)$user['time_password_last_change'] ?: null;
 
-			$User->countLoginsSuccessful = (int)$user['countLoginsSuccessful'];
-			$User->countLoginsFailed = (int)$user['countLoginsFailed'];
-			$User->countLoginsFailedStreak = (int)$user['countLoginsFailedStreak'];
+			$User->countLoginsSuccessful = (int)$user['count_logins_successful'];
+			$User->countLoginsFailed = (int)$user['count_logins_failed'];
+			$User->countLoginsFailedStreak = (int)$user['count_logins_failed_streak'];
 
 			$User->fullname = $user['fullname'];
 			$User->name = $User->fullname ?: $User->username;
@@ -224,15 +224,15 @@ class User
 				throw new UserException('Insufficient credentials supplied, missing username, password or token.');
 
 			$query = DB::prepareQuery("SELECT
-					ID AS userID,
-					passwordHash,
-					passwordSalt,
-					passwordAuthtoken,
-					timeAuthtokenCreated
+					id AS user_id,
+					password_hash,
+					password_salt,
+					password_authtoken,
+					time_authtoken_created
 				FROM
-					Asenine_Users
+					asenine_users
 				WHERE
-					isEnabled = 1
+					is_enabled = true
 					AND username = %s LIMIT 1",
 				$username);
 
@@ -276,15 +276,15 @@ class User
 				/* If login fails, remove token and increment streaks.
 					Also disables user if fail streak is too high. */
 				$query = DB::prepareQuery("UPDATE
-						Asenine_Users
+						asenine_users
 					SET
-						countLoginsFailed = countLoginsFailed + %d,
-						countLoginsFailedStreak = countLoginsFailedStreak + %d,
-						isEnabled = (countLoginsFailedStreak < %u),
-						passwordAuthtoken = NULL,
-						timeAuthtokenCreated = NULL
+						count_logins_failed = count_logins_failed + %d,
+						count_logins_failed_streak = count_logins_failed_streak + %d,
+						is_enabled = (count_logins_failed_streak < %u),
+						password_authtoken = NULL,
+						time_authtoken_created = NULL
 					WHERE
-						ID = %u",
+						id = %u",
 					$isPasswordLogin ? 1 : 0,
 					$isPasswordLogin ? 1 : 0,
 					self::FAIL_LOCK,
@@ -315,16 +315,20 @@ class User
 
 
 			/* Update database to reflect latest login result */
+			$now = time();
+
 			$query = DB::prepareQuery("UPDATE
-					Asenine_Users
+					asenine_users
 				SET
-					countLoginsSuccessful = countLoginsSuccessful + 1,
-					countLoginsFailedStreak = 0,
-					timeLastLogin = UNIX_TIMESTAMP(),
-					passwordAuthtoken = %s,
-					timeAuthtokenCreated = UNIX_TIMESTAMP()
+					count_logins_successful = count_logins_successful + 1,
+					count_logins_failed_streak = 0,
+					time_last_login = %d,
+					password_authtoken = %s,
+					time_authtoken_created = %d
 				WHERE
-					ID = %u",
+					id = %u",
+				$now,
+				$now,
 				$newToken,
 				$User->getID());
 
@@ -343,7 +347,7 @@ class User
 	/* Removes a user from database */
 	public static function removeFromDB(self $User)
 	{
-		$query = DB::prepareQuery("DELETE FROM Asenine_Users WHERE ID = %d", $User->userID);
+		$query = DB::prepareQuery("DELETE FROM asenine_users WHERE ID = %d", $User->userID);
 		return DB::query($query);
 	}
 
@@ -356,12 +360,12 @@ class User
 		if( !isset($User->userID) ) self::createInDB($User);
 
 		$query = DB::prepareQuery("UPDATE
-				Asenine_Users
+				asenine_users
 			SET
-				isEnabled = %u,
-				isAdministrator = %u,
-				timeModified = %u,
-				timeAutoLogout = NULLIF(%u, 0),
+				is_enabled = %b,
+				is_administrator = %b,
+				time_modified = %u,
+				time_auto_logout = NULLIF(%u, 0),
 				username = NULLIF(%s, ''),
 				fullname = NULLIF(%s, ''),
 				email = NULLIF(%s, ''),
@@ -531,10 +535,10 @@ class User
 		if( $this->isLoggedIn !== true ) return false;
 
 		$query = DB::prepareQuery("UPDATE
-				Asenine_Users
+				asenine_users
 			SET
-				passwordAuthtoken = NULL,
-				timeAuthtokenCreated = NULL
+				password_authtoken = NULL,
+				time_authtoken_created = NULL
 			WHERE
 				ID = %u",
 			$this->userID);
@@ -573,13 +577,13 @@ class User
 	{
 		$properties = User\Dataset::getProperties($this->userID);
 
-		$this->isEnabled = (bool)$properties['isEnabled'];
-		$this->isAdministrator = (bool)$properties['isAdministrator'];
+		$this->isEnabled = (bool)$properties['is_enabled'];
+		$this->isAdministrator = (bool)$properties['is_administrator'];
 
 		$this->username = $properties['username'];
 
 		$this->timeLastActivity = time();
-		$this->timeKickOut = is_numeric($properties['timeAutoLogout']) ? $this->timeLastActivity + $properties['timeAutoLogout'] : null;
+		$this->timeKickOut = is_numeric($properties['time_auto_logout']) ? $this->timeLastActivity + $properties['time_auto_logout'] : null;
 
 		$this->policies = User\Manager::getPolicies($this->userID);
 

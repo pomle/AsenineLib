@@ -13,19 +13,19 @@ class Dataset
 
 	public static function getIDsFromLabel($userGroupLabel)
 	{
-		$query = DB::prepareQuery("SELECT ID FROM Asenine_UserGroups WHERE label = %s", $userGroupLabel);
+		$query = DB::prepareQuery("SELECT ID FROM asenine_user_groups WHERE label = %s", $userGroupLabel);
 		return DB::queryAndFetchOne($query);
 	}
 
 	public static function getProperties($userGroupID)
 	{
-		$query = DB::prepareQuery("SELECT * FROM Asenine_UserGroups WHERE ID = %u", $userGroupID);
+		$query = DB::prepareQuery("SELECT * FROM asenine_user_groups WHERE ID = %u", $userGroupID);
 		return DB::queryAndFetchOne($query);
 	}
 
 	public static function getUserIDs($userGroupIDs)
 	{
-		$query = DB::prepareQuery("SELECT userID FROM Asenine_UserGroupUsers WHERE userGroupID IN %a", $userGroupIDs);
+		$query = DB::prepareQuery("SELECT user_id FROM asenine_user_group_users WHERE user_group_id IN %a", $userGroupIDs);
 		return DB::queryAndFetchArray($query);
 	}
 

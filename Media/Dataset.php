@@ -13,25 +13,25 @@ class Dataset
 
 	public static function getData($mediaID)
 	{
-		$query = DB::prepareQuery("SELECT * FROM Asenine_Media WHERE ID = %u", $mediaID);
+		$query = DB::prepareQuery("SELECT * FROM asenine_media WHERE ID = %u", $mediaID);
 		return DB::queryAndFetchOne($query);
 	}
 
 	public static function getFileOriginalName($mediaID)
 	{
-		$query = DB::prepareQuery("SELECT fileOriginalName FROM Asenine_Media WHERE ID = %u", $mediaID);
+		$query = DB::prepareQuery("SELECT file_original_name FROM asenine_media WHERE id = %u", $mediaID);
 		return DB::queryAndFetchOne($query);
 	}
 
 	public static function getHashFromID($mediaID)
 	{
-		$query = DB::prepareQuery("SELECT f.hash FROM Asenine_Media m JOIN Asenine_Files f ON f.ID = m.fileID WHERE m.ID = %u", $mediaID);
+		$query = DB::prepareQuery("SELECT f.hash FROM asenine_media m JOIN asenine_files f ON f.id = m.file_id WHERE m.id = %u", $mediaID);
 		return DB::queryAndFetchOne($query);
 	}
 
 	public static function getIDFromHash($mediaHash)
 	{
-		$query = DB::prepareQuery("SELECT m.ID FROM Asenine_Media m JOIN Asenine_Files f ON f.ID = m.fileID WHERE f.hash = %s", $mediaHash);
+		$query = DB::prepareQuery("SELECT m.id FROM asenine_media m JOIN asenine_files f ON f.id = m.file_id WHERE f.hash = %s", $mediaHash);
 		return DB::queryAndFetchOne($query);
 	}
 

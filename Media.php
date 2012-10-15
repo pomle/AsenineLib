@@ -77,11 +77,11 @@ abstract class Media implements iMedia
 	public static function integrateIntoLibrary(self $Media)
 	{
 		$query = DB::prepareQuery("SELECT
-				f.ID AS fileID,
-				m.ID AS mediaID
+				f.id AS file_id,
+				m.id AS media_id
 			FROM
-				Asenine_Files f
-				LEFT JOIN Asenine_Media m ON m.fileID = f.ID
+				asenine_files f
+				LEFT JOIN asenine_media m ON m.file_id = f.ID
 			WHERE
 				f.hash = %s",
 			$Media->File->getHash());
@@ -92,12 +92,12 @@ abstract class Media implements iMedia
 		if($media = DB::queryAndFetchOne($query))
 		{
 			/* If media already exists, return existing media */
-			if($media['mediaID']) {
-				return self::loadFromDB($media['mediaID']);
+			if($media['media_id']) {
+				return self::loadFromDB($media['media_id']);
 			}
 
 			/* If only file exists, replace file with library file */
-			$Media->File = File::loadFromDB($Archiver, $media['fileID']);
+			$Media->File = File::loadFromDB($Archiver, $media['file_id']);
 		}
 		else
 		{
@@ -126,20 +126,20 @@ abstract class Media implements iMedia
 		$medias = array_fill_keys($mediaIDs, false);
 
 		$query = DB::prepareQuery("SELECT
-				m.ID AS mediaID,
-				f.ID AS fileID,
-				m.timeCreated,
-				m.timeModified,
-				m.mediaType,
-				f.hash AS fileHash,
-				f.size AS fileSize,
-				f.mime AS mimeType,
+				m.id AS media_id,
+				f.id AS file_id,
+				m.time_created,
+				m.time_modified,
+				m.media_type,
+				f.hash AS file_hash,
+				f.size AS file_size,
+				f.mime AS mime_type,
 				f.ext AS extension
 			FROM
-				Asenine_Media m
-				JOIN Asenine_Files f ON f.ID = m.fileID
+				asenine_media m
+				JOIN asenine_files f ON f.id = m.file_id
 			WHERE
-				m.ID IN %a",
+				m.id IN %a",
 			$mediaIDs);
 
 		$result = DB::queryAndFetchResult($query);
@@ -150,22 +150,22 @@ abstract class Media implements iMedia
 		{
 			try
 			{
-				$mediaID = (int)$media['mediaID'];
+				$mediaID = (int)$media['media_id'];
 
 				$File = new File(
-					$Archiver->getFileLocation($media['fileHash']),
-					(int)$media['fileSize'] ?: null,
-					$media['mimeType'],
+					$Archiver->getFileLocation($media['file_hash']),
+					(int)$media['file_size'] ?: null,
+					$media['mime_type'],
 					sprintf('Media_ID_%d.%s', $mediaID, $media['extension']),
-					$media['fileHash']
+					$media['file_hash']
 				);
 
-				$File->fileID = (int)$media['fileID'];
+				$File->fileID = (int)$media['file_id'];
 
-				if( !$Media = self::createFromType($media['mediaType'], $media['fileHash'], $File) )
-					$Media = new \Asenine\Media\Type\Defunct($media['fileHash'], $File); ### Fallback to Defunct type
+				if( !$Media = self::createFromType($media['media_type'], $media['file_hash'], $File) )
+					$Media = new \Asenine\Media\Type\Defunct($media['file_hash'], $File); ### Fallback to Defunct type
 
-				$Media->mimeType = $media['mimeType'];
+				$Media->mimeType = $media['mime_type'];
 				$Media->mediaID = $mediaID;
 
 				$medias[$Media->mediaID] = $Media;
@@ -213,7 +213,7 @@ abstract class Media implements iMedia
 		### Notice that DB skip can be overridden
 		if( $skipDBDelete === false || $forceDBDelete === true )
 		{
-			$query = DB::prepareQuery("DELETE FROM Asenine_Media WHERE ID = %u", $Media->mediaID);
+			$query = DB::prepareQuery("DELETE FROM asenine_media WHERE id = %u", $Media->mediaID);
 			DB::queryAndCountAffected($query);
 
 			return true;
@@ -225,36 +225,46 @@ abstract class Media implements iMedia
 	public static function saveToDB(self $Media)
 	{
 		$timeCreated = $timeModified = time();
+		$mediaType = isset($Media->type) ? $Media->type : $Media::TYPE;
 
-		$query = DB::prepareQuery("INSERT INTO
-			Asenine_Media (
-				ID,
-				fileID,
-				timeCreated,
-				timeModified,
-				mediaType
-			) VALUES(
-				NULLIF(%u, 0),
-				%d,
-				%d,
-				%d,
-				%s
-			) ON DUPLICATE KEY UPDATE
-				timeModified = VALUES(timeModified),
-				mediaType = VALUES(mediaType)",
-			isset($Media->mediaID) ? $Media->mediaID : 0,
-			$Media->File->fileID,
-			$timeCreated,
-			$timeModified,
-			isset($Media->type) ? $Media->type : $Media::TYPE);
-
-		if($mediaID = (int)DB::queryAndGetID($query))
+		if(!isset($Media->mediaID))
 		{
+			$query = DB::prepareQuery("INSERT INTO
+				asenine_media (
+					file_id,
+					time_created,
+					time_modified,
+					media_type
+				) VALUES(
+					%d,
+					%d,
+					%d,
+					%s)",
+				$Media->File->fileID,
+				$timeCreated,
+				$timeModified,
+				$mediaType);
+
+			$Media->mediaID = (int)DB::queryAndGetID($query, 'asenine_media_id_seq');
 			$Media->timeCreated = $timeCreated;
-			$Media->mediaID = $mediaID;
+		}
+		else
+		{
+			$query = DB::prepareQuery("UPDATE
+					asenine_media
+				SET
+					time_modified = %u,
+					media_type = %s
+				WHERE
+					id = %d",
+				$timeModified,
+				$mediaType,
+				$Media->mediaID);
+
+			DB::query($query);
 		}
 
-		return true;
+		$Media->timeModified = $timeModified;
 	}
 
 

@@ -7,9 +7,9 @@ class UserGroup
 	{
 		$timeCreated = time();
 
-		$query = DB::prepareQuery("INSERT INTO Asenine_UserGroups (ID, timeCreated) VALUES(NULL, %u)", $timeCreated);
+		$query = DB::prepareQuery("INSERT INTO asenine_user_groups (time_created) VALUES(%u)", $timeCreated);
 
-		if( $userGroupID = (int)DB::queryAndGetID($query) )
+		if( $userGroupID = (int)DB::queryAndGetID($query, 'asenine_user_groups_id_seq') )
 		{
 			$UserGroup->userGroupID = (int)$userGroupID;
 			$UserGroup->timeCreated = $timeCreated;
@@ -26,12 +26,12 @@ class UserGroup
 		$userGroups = array_fill_keys($userGroupIDs, false);
 
 		$query = DB::prepareQuery("SELECT
-				ug.ID AS userGroupID,
+				ug.id AS user_group_id,
 				ug.name,
 				ug.label,
 				ug.description
 			FROM
-				Asenine_UserGroups ug
+				asenine_user_groups ug
 			WHERE
 				ug.ID IN %a",
 			$userGroupIDs);
@@ -42,7 +42,7 @@ class UserGroup
 		{
 			$UserGroup = new self();
 
-			$UserGroup->userGroupID = (int)$userGroup['userGroupID'];
+			$UserGroup->userGroupID = (int)$userGroup['user_group_id'];
 			$UserGroup->name = $userGroup['name'];
 			$UserGroup->label = $userGroup['label'] ?: null;
 			$UserGroup->description = $userGroup['description'];
@@ -62,9 +62,9 @@ class UserGroup
 		if( !isset($UserGroup->userGroupID) ) self::createInDB($UserGroup);
 
 		$query = DB::prepareQuery("UPDATE
-				Asenine_UserGroups
+				asenine_user_groups
 			SET
-				timeModified = %u,
+				time_modified = %u,
 				name = NULLIF(%s, ''),
 				label = NULLIF(%s, ''),
 				description = NULLIF(%s, '')
