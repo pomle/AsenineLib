@@ -24,6 +24,7 @@ class User
 	const FAIL_LOCK = 10;
 
 	protected
+		$csrfToken,
 		$ip,
 		$IPsAllowed,
 		$IPsDenied,
@@ -338,7 +339,7 @@ class User
 		}
 		catch(UserException $e)
 		{
-			if( DEBUG ) trigger_error('Login Failed: ' . $e->getMessage(), E_USER_NOTICE);
+			throw new UserException(DEBUG ? $e->getMessage() : 'Login Failed.');
 
 			return false;
 		}
@@ -357,7 +358,7 @@ class User
 	{
 		$timeModified = time();
 
-		if( !isset($User->userID) ) self::createInDB($User);
+		if(!isset($User->userID)) self::createInDB($User);
 
 		$query = DB::prepareQuery("UPDATE
 				asenine_users
@@ -371,7 +372,7 @@ class User
 				email = NULLIF(%s, ''),
 				phone = NULLIF(%s, '')
 			WHERE
-				ID = %u",
+				id = %u",
 			$User->isEnabled,
 			$User->isAdministrator,
 			$timeModified,
@@ -389,22 +390,12 @@ class User
 		return true;
 	}
 
-	/* Compares hash of two strings to mitigate string compare timing attacks */
-	public static function tokenCompare($token1, $token2)
-	{
-		$salt = 'alx3jicalhm,qpictw9,cjom';
-		$alg = 'sha256';
-
-		$hash1 = hash($alg, $token1 . $salt);
-		$hash2 = hash($alg, $token2 . $salt);
-
-		return ($hash1 === $hash2);
-	}
-
 
 	public function __construct($userID = null)
 	{
-		$this->ip = getenv('REMOTE_ADDR');
+		$this->csrfToken = hash('sha256', 'eaks up a message into blocks of a fixed size and iterates over t' . uniqid('asenine-csrf', true));
+		$this->ip = $this->getCurrentIP();
+
 		$this->userID = (int)$userID ?: null;
 		$this->isAdministrator = false;
 		$this->isLoggedIn = false;
@@ -467,15 +458,19 @@ class User
 			$this->isLoggedIn = false;
 	}
 
+	public function getCSRFToken()
+	{
+		return $this->csrfToken;
+	}
+
+	public function getCurrentIP()
+	{
+		return getenv('REMOTE_ADDR');
+	}
 
 	public function getID()
 	{
 		return $this->userID;
-	}
-
-	public function getIP()
-	{
-		return $this->ip;
 	}
 
 	public function getPolicies()
@@ -490,6 +485,11 @@ class User
 
 		else
 			return null;
+	}
+
+	public function getStoredIP()
+	{
+		return $this->ip;
 	}
 
 	public function hasPolicy($policy)
