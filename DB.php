@@ -12,7 +12,8 @@ class DB
 
 	private static
 		$vars,
-		$varIterator;
+		$varIterator,
+		$lastPreparedQuery;
 
 	public static
 		$queryCount = 0,
@@ -75,6 +76,7 @@ class DB
 
 		self::$vars = $vars;
 		self::$varIterator = 0;
+		self::$lastPreparedQuery = $query;
 
 		$query = preg_replace_callback('/%([AabduFfSs])/', array('self', 'prepareVariable'), $query);
 
@@ -86,9 +88,12 @@ class DB
 	protected static function prepareVariable($matches)
 	{
 		$placeholder = $matches[1];
-		$var = self::$vars[self::$varIterator++];
+		$i = self::$varIterator++;
 
-		#var_dump($placeholder);
+		if(!array_key_exists($i, self::$vars))
+			throw new DBException(sprintf('Missing argument %d for placeholder %s in query %s', $i, $matches[0], self::$lastPreparedQuery));
+
+		$var = self::$vars[$i];
 
 		switch($placeholder)
 		{
@@ -129,7 +134,7 @@ class DB
 				return self::escapeString((string)$var);
 		}
 
-		return '0';
+		throw new DBException(sprintf('No handler for placeholder %s in query %s', $matches[0], self::$lastPreparedQuery));
 	}
 
 	public static function queryAndCountAffected($query)
