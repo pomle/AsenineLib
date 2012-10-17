@@ -114,12 +114,14 @@ class User
 				%u,
 				%u,
 				NULL)",
+			$timeCreated,
 			$timeCreated);
 
 		if( $userID = (int)DB::queryAndGetID($query, 'asenine_users_id_seq') )
 		{
 			$User->userID = (int)$userID;
 			$User->timeCreated = $timeCreated;
+			$User->timeModified = $timeCreated;
 		}
 	}
 
