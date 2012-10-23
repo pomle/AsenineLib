@@ -78,7 +78,7 @@ class DB
 		self::$varIterator = 0;
 		self::$lastPreparedQuery = $query;
 
-		$query = preg_replace_callback('/%([AabduFfSs])/', array('self', 'prepareVariable'), $query);
+		$query = preg_replace_callback('/%([AabduFfSst])/', array('self', 'prepareVariable'), $query);
 
 		self::$vars = null;
 
@@ -132,6 +132,12 @@ class DB
 			### String
 			case 's':
 				return self::escapeString((string)$var);
+
+			case 't':
+				if($var instanceof \DateTime)
+					return $var->format("'Y-m-d H:i:s'");
+				else
+					return 'NULL';
 		}
 
 		throw new DBException(sprintf('No handler for placeholder %s in query %s', $matches[0], self::$lastPreparedQuery));
