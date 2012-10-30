@@ -326,8 +326,8 @@ class User
 					count_logins_successful = count_logins_successful + 1,
 					count_logins_failed_streak = 0,
 					time_last_login = %d,
-					password_authtoken = %s,
-					time_authtoken_created = %d
+					time_authtoken_created = %d,
+					password_authtoken = %s
 				WHERE
 					id = %u",
 				$now,
