@@ -266,7 +266,7 @@ class User
 					if(($timeToken + self::TOKEN_LIFE) < time())
 						throw new UserException('Token has expired.');
 
-					if(!self::tokenCompare($storedToken, $trialToken))
+					if(!Util\Token::safeCompare($storedToken, $trialToken))
 						throw new UserException('Token in DB mismatches token in Cookie.');
 				}
 				else
