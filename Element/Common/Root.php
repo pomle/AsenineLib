@@ -10,7 +10,8 @@ abstract class Root implements iRoot
 {
 	protected
 		$attributes = array(),
-		$children = array();
+		$children = array(),
+		$styles = array();
 
 	public static function asWrapper()
 	{
@@ -67,6 +68,12 @@ abstract class Root implements iRoot
 		return $this;
 	}
 
+	public function addStyle($key, $value)
+	{
+		$this->styles[$key] = $value;
+		return $this;
+	}
+
 	public function ensureAttr($key, $value, $state)
 	{
 		if( $state == false && $this->hasAttr($key, $value) )
@@ -110,6 +117,16 @@ abstract class Root implements iRoot
 
 		foreach($this->attributes as $attribute => $values)
 			$string .= sprintf(' %s="%s"', htmlspecialchars($attribute), htmlspecialchars(join(' ', $values)));
+
+		if(count($this->styles))
+		{
+			$string .= ' style="';
+
+			foreach($this->styles as $key => $value)
+				$string .= htmlspecialchars($key) . ': ' . htmlspecialchars($value) . '; ';
+
+			$string .= '"';
+		}
 
 		return $string;
 	}
