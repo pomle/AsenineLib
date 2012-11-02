@@ -136,6 +136,16 @@ abstract class Root implements iRoot
 		return $this->children;
 	}
 
+	final public function printStartTag()
+	{
+		printf('<%s %s>', static::TAG, $this->getAttributes());
+	}
+
+	final public function printEndTag()
+	{
+		printf('</%s>', static::TAG);
+	}
+
 	public function removeAttr($key, $value = null)
 	{
 		if(!is_null($value) && ($index = array_search($value, $this->attributes[$key])) !== false )
