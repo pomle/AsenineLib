@@ -25,11 +25,14 @@ class SelectBox extends Common\Root
 
 
 
-	public function __construct($name = null, $selectedKey = null, Array $items = array())
+	public function __construct($name = null, $selectedKey = null, Array $items = array(), $valueIsKey = false)
 	{
 		$this->name = $name;
 		$this->selectedKey = $selectedKey;
 		$this->items = $items;
+
+		if($valueIsKey)
+			$this->items = array_combine($this->items, $this->items);
 
 		$this->isNoneSelectable = false;
 	}
@@ -40,15 +43,19 @@ class SelectBox extends Common\Root
 		$this->addData('origin', $this->selectedKey);
 
 		ob_start();
-		?><select name="<? echo htmlspecialchars($this->name); ?>"<? echo $this->getAttributes(); ?>><?
-		if($this->isNoneSelectable) { ?><option value=""></option><? }
+		?>
+		<select name="<? echo htmlspecialchars($this->name); ?>"<? echo $this->getAttributes(); ?>>
+			<?
+			if($this->isNoneSelectable) { ?><option value=""></option><? }
 
-		foreach($this->items as $key => $value)
-		{
-			$isSelected = ($this->selectedKey && $this->selectedKey == $key);
-			?><option value="<? echo htmlspecialchars($key); ?>" <? if($isSelected) echo 'selected="selected"'; ?>><? echo htmlspecialchars($value), '&emsp;'; ?></option><?
-		}
-		?></select><?
+			foreach($this->items as $key => $value)
+			{
+				$isSelected = ($this->selectedKey && $this->selectedKey == $key);
+				?><option value="<? echo htmlspecialchars($key); ?>" <? if($isSelected) echo 'selected="selected"'; ?>><? echo htmlspecialchars($value), '&emsp;'; ?></option><?
+			}
+			?>
+		</select>
+		<?
 		return ob_get_clean();
 	}
 
