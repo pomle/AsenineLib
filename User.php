@@ -451,7 +451,7 @@ class User
 		if( $this->timeKickOut && time() >= $this->timeKickOut )
 			$kick = true;
 
-		### If user has been disables in database, kick
+		### If user has been disabled in database, kick
 		if( $this->isEnabled !== true )
 			$kick = true;
 
