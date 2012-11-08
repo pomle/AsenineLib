@@ -129,7 +129,7 @@ class Manager
 			$time,
 			$userID);
 
-		/* If affected rows is zero then user ID probably did not exist, so return false */
+		/* If affected rows is zero then user ID did not exist, so return false */
 		$res = DB::queryAndCountAffected($query);
 
 		return ($res > 0);
