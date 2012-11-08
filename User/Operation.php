@@ -2,8 +2,9 @@
 namespace Asenine\User;
 
 use
+	\Asenine\DB,
 	\Asenine\User,
-	\Asenine\DB;
+	\Asenine\UserException;
 
 class Operation
 {
@@ -11,17 +12,8 @@ class Operation
 	{
 		self::verifyPassword($newPassword, $newPasswordVerify);
 
-		if( !$crypto = Manager::getPasswordCrypto($userID) )
-			throw New \Exception(_('Invalid user ID.'));
-
-		$currentPasswordHash = User::createHash($currentPassword, $crypto);
-		$newPasswordHash = User::createHash($newPassword, $crypto);
-
-		$query = DB::prepareQuery("SELECT COUNT(*) FROM asenine_users WHERE ID = %u AND password_hash = %s", $userID, $currentPasswordHash);
-		$res = (int)DB::queryAndFetchOne($query);
-
-		if( $res !== 1 )
-			throw new \Exception(_('Current password mismatch.'));
+		if(User::verifyPassword($userID, $currentPassword) !== true)
+			throw new UserException(_('Current password does not match.'));
 
 		return Manager::setPassword($userID, $newPassword);
 	}
