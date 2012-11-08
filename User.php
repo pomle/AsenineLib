@@ -228,8 +228,6 @@ class User
 
 			$query = DB::prepareQuery("SELECT
 					id AS user_id,
-					password_hash,
-					password_salt,
 					password_authtoken,
 					time_authtoken_created
 				FROM
@@ -239,23 +237,16 @@ class User
 					AND username = %s LIMIT 1",
 				$username);
 
-			/* Logs a user in with either password or token */
 			if(!$user = DB::queryAndFetchOne($query))
 				throw new UserException('Username invalid or user login not enabled.');
 
-			list($userID, $storedHash, $passwordSalt, $storedToken, $timeToken) = array_values($user);
-
-			$isPasswordLogin = false;
+			list($userID, $storedToken, $timeToken) = array_values($user);
 
 			try
 			{
-				if(isset($password) && strlen($password))
+				if($isPasswordLogin = (isset($password) && strlen($password)))
 				{
-					$isPasswordLogin = true;
-
-					$trialHash = self::createHash($password, $passwordSalt);
-
-					if($trialHash !== $storedHash)
+					if(self::verifyPassword($userID, $password) !== true)
 						throw new UserException('Password mismatch.');
 				}
 				elseif(isset($trialToken) && strlen($trialToken))
@@ -390,6 +381,26 @@ class User
 		$User->timeModified = $timeModified;
 
 		return true;
+	}
+
+	public static function verifyPassword($userID, $password)
+	{
+		$query = DB::prepareQuery("SELECT
+				password_hash,
+				password_salt
+			FROM
+				asenine_users
+			WHERE
+				id = %d",
+			$userID);
+
+		if(!$result = DB::queryAndFetchOne($query))
+			throw new UserException('User does not exist.');
+
+		$storedHash = $result['password_hash'];
+		$calculatedHash = self::createHash($password, $result['password_salt']);
+
+		return ($storedHash === $calculatedHash);
 	}
 
 
