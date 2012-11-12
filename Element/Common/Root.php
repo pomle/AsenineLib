@@ -11,7 +11,8 @@ abstract class Root implements iRoot
 	protected
 		$attributes = array(),
 		$children = array(),
-		$styles = array();
+		$styles = array(),
+		$tag = 'div';
 
 	public static function asWrapper()
 	{
@@ -138,12 +139,12 @@ abstract class Root implements iRoot
 
 	final public function printStartTag()
 	{
-		printf('<%s %s>', static::TAG, $this->getAttributes());
+		printf('<%s %s>', $this->tag, $this->getAttributes());
 	}
 
 	final public function printEndTag()
 	{
-		printf('</%s>', static::TAG);
+		printf('</%s>', $this->tag);
 	}
 
 	public function removeAttr($key, $value = null)
