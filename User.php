@@ -440,6 +440,13 @@ class User
 			$this->enforceSecurity();
 	}
 
+
+	public function addPolicy($policy)
+	{
+		$this->policies[$policy] = 0;
+		return $this;
+	}
+
 	/* Updates security state and takes action to log the user out if any of them match */
 	public function enforceSecurity()
 	{
@@ -469,6 +476,15 @@ class User
 
 		if( $kick )
 			$this->isLoggedIn = false;
+	}
+
+	public function dropPolicy($policy)
+	{
+		if(isset($this->policies[$policy]))
+		{
+			unset($this->policies[$policy]);
+		}
+		return $this;
 	}
 
 	public function getCSRFToken()

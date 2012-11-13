@@ -361,7 +361,7 @@ class File implements iFile
 
 	public function getName()
 	{
-		return $this->name;
+		return $this->name ?: basename($this->getLocation());
 	}
 
 	public function getSize()
