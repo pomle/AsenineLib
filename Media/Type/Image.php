@@ -24,6 +24,11 @@ class Image extends _Visual
 	}
 
 
+	public function getAspectRatio()
+	{
+		return $this->getPixelsX() / $this->getPixelsY();
+	}
+
 	public function getFrame($index = 0)
 	{
 		return $this->getFilePath();
@@ -36,11 +41,27 @@ class Image extends _Visual
 
 	public function getInfo()
 	{
-		return \Asenine\App\ImageGuru::doIdentify($this->getFilePath(), true);
+		if(!isset($this->imageInfo)) {
+			$this->imageInfo = \Asenine\App\ImageGuru::doIdentify($this->getFilePath(), true);
+		}
+
+		return $this->imageInfo;
 	}
 
 	public function getPreviewImage()
 	{
 		return $this->getFrame();
+	}
+
+	public function getPixelsX()
+	{
+		$info = $this->getInfo();
+		return (int)$info['size']['x'];
+	}
+
+	public function getPixelsY()
+	{
+		$info = $this->getInfo();
+		return (int)$info['size']['y'];
 	}
 }
