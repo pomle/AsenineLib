@@ -23,7 +23,7 @@ abstract class Preset implements iPreset
 
 
 			$dirPath = ASENINE_DIR_MEDIA_PUBLIC . $this->getPath();
-			if( !file_exists($dirPath) && !is_dir($dirPath) && !mkdir($dirPath, 0755, true) ) throw New \Exception("Path not reachable \"$dirPath\"");
+			if( !file_exists($dirPath) && !is_dir($dirPath) && !@mkdir($dirPath, 0755, true) ) throw New \Exception("Path not reachable \"$dirPath\"");
 
 			$filePath = $this->getFullFilePath();
 
