@@ -31,8 +31,9 @@ class SelectBox extends Common\Root
 		$this->selectedKey = $selectedKey;
 		$this->items = $items;
 
-		if($valueIsKey)
+		if (count($items) && $valueIsKey) {
 			$this->items = array_combine($this->items, $this->items);
+		}
 
 		$this->isNoneSelectable = false;
 	}
