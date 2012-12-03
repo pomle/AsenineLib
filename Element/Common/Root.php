@@ -14,6 +14,13 @@ abstract class Root implements iRoot
 		$styles = array(),
 		$tag = 'div';
 
+
+	public function __toString()
+	{
+		return $this->getStartTag() . $this->stringChildren() . $this->getEndTag();
+	}
+
+
 	public static function asWrapper()
 	{
 		$Object = new static();
