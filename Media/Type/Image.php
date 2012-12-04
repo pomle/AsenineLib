@@ -26,7 +26,14 @@ class Image extends _Visual
 
 	public function getAspectRatio()
 	{
-		return $this->getPixelsX() / $this->getPixelsY();
+		$pixelsX = $this->getPixelsX();
+		$pixelsY = $this->getPixelsY();
+
+		if ($pixelsX > 0 && $pixelsY > 0) {
+			return $pixelsX / $pixelsY;
+		}
+
+		return null;
 	}
 
 	public function getFrame($index = 0)
