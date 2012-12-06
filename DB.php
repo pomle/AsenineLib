@@ -222,7 +222,7 @@ class DB
 		if( $Res === false )
 		{
 			$err = self::$PDO->errorInfo();
-			throw new DBException('Query Error on "' . $query . '"; ' . $err[2]);
+			throw new DBException(Util\Debug::log('Query Error on "' . $query . '"; ' . $err[2], 'Database Error'));
 		}
 
 		return $Res;
