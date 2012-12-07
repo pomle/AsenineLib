@@ -75,19 +75,20 @@ class User
 	 */
 	public static function createHash($string, $salt)
 	{
-		if(!defined('CRYPT_BLOWFISH') || (CRYPT_BLOWFISH !== 1)) {
+		if (!defined('CRYPT_BLOWFISH') || (CRYPT_BLOWFISH !== 1)) {
 			throw new \Exception("bcrypt not supported in this installation. See http://php.net/crypt");
 		}
 
-		if(($saltLen = strlen($salt)) < 22) {
+		if (($saltLen = strlen($salt)) < 22) {
 			throw new \Exception("Illegal salt.");
 		}
 
 		/* TODO: Set typ $2y and upgrade to PHP 5.3.7 */
 		$hash = crypt($string, '$2a$10$' . $salt);
 
-		if(strlen($hash) < $saltLen)
+		if (strlen($hash) < $saltLen) {
 			throw new \Exception("Hashing failed.");
+		}
 
 		return $hash;
 	}
