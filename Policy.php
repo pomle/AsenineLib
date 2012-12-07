@@ -19,26 +19,60 @@ class Policy
 
 	public static function loadByName($policy)
 	{
-		$query = DB::prepareQuery("SELECT ID FROM asenine_policies WHERE policy = %s", $policy);
+		$query = DB::prepareQuery("SELECT id FROM asenine_policies WHERE policy = %s", $policy);
 
-		if($policyID = DB::queryAndFetchOne($query))
-		{
-			return $policyID;
+		if ($policyID = DB::queryAndFetchOne($query)) {
+			return self::loadFromDB($policyID);
 		}
 
 		return false;
 	}
 
 	public static function loadFromDB($policyIDs)
-	{}
+	{
+		if (!$returnArray = is_array($policyIDs)) {
+			$policyIDs = (array)$policyIDs;
+		}
+
+		$policies = array_fill_keys($policyIDs, null);
+
+		$query = DB::prepareQuery("SELECT
+				id,
+				policy,
+				description
+			FROM
+				asenine_policies
+			WHERE
+				id IN %a",
+			$policyIDs);
+
+		$result = DB::query($query);
+
+		while ($row = DB::assoc($result)) {
+			$Policy = new self($row['policy'], $row['description']);
+			$Policy->policyID = (int)$row['id'];
+
+			$policies[$Policy->policyID] = $Policy;
+		}
+
+		return $returnArray ? $policies : reset($policies);
+	}
 
 	public static function saveToDB(self $Policy)
 	{
+		$cleanName = self::stripIllegalChars($Policy->name);
+
+		if ($Policy->name !== $cleanName) {
+			throw new \Exception('Policy contains illegal characters.');
+		}
+
+		/* In case the exception is ever removed we want the data sanitized for the DB */
+		$Policy->name = $cleanName;
+
 		if (!isset($Policy->policyID)) {
 			$query = DB::prepareQuery("INSERT INTO asenine_policies (policy) VALUES(%s)", $Policy->name);
 			$Policy->policyID = (int)DB::queryAndGetID($query, 'asenine_policies_id_seq');
 		}
-
 
 		$query = DB::prepareQuery("UPDATE
 				asenine_policies
@@ -64,5 +98,16 @@ class Policy
 	{
 		$this->name = $name;
 		$this->description = $description;
+	}
+
+
+	public function getDescription()
+	{
+		return $this->description;
+	}
+
+	public function getName()
+	{
+		return $this->name;
 	}
 }
