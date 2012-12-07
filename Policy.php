@@ -34,18 +34,22 @@ class Policy
 
 	public static function saveToDB(self $Policy)
 	{
-		$query = DB::prepareQuery("INSERT INTO
-			asenine_policies (
-				id,
-				policy,
-				description
-			) VALUES(NULLIF(%d, 0), %s, %s)
-			ON DUPLICATE KEY UPDATE
-				policy = VALUES(policy),
-				description = VALUES(description)",
-			$Policy->policyID,
+		if (!isset($Policy->policyID)) {
+			$query = DB::prepareQuery("INSERT INTO asenine_policies (policy) VALUES(%s)", $Policy->name);
+			$Policy->policyID = (int)DB::queryAndGetID($query, 'asenine_policies_id_seq');
+		}
+
+
+		$query = DB::prepareQuery("UPDATE
+				asenine_policies
+			SET
+				policy = %s,
+				description = NULLIF(%s, '')
+			WHERE
+				id = %d",
 			$Policy->name,
-			$Policy->description);
+			$Policy->description,
+			$Policy->policyID);
 
 		DB::query($query);
 	}
