@@ -16,7 +16,7 @@ class Debug
 	 * @param string $production 	String to output if debug mode is off.
 	 * @return string
 	 */
-	public static function log($debug, $production)
+	public static function log($debug, $production = 'System Error')
 	{
 		$isDebugging = (defined('DEBUG') && (true === constant('DEBUG')));
 
