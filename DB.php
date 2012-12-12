@@ -246,7 +246,7 @@ class DB
 
 try
 {
-	DB::addPDO(new \PDO(ASENINE_PDO_DSN, ASENINE_PDO_USER, ASENINE_PDO_PASS));
+	DB::addPDO(\Spotify\Scatman\Controller\DB::getReadWrite()->getPDO());
 }
 catch(\Exception $e)
 {

@@ -1,4 +1,9 @@
 <?
+/**
+ * WARNING. DEPRECATED.
+ *
+ * See \Asenine\Database\*
+ */
 namespace Asenine\Query;
 
 class Insert

@@ -226,12 +226,8 @@ class File implements iFile
 	}
 
 
-	public function __construct($location, $size = null, $mime = null, $name = null, $hash = null)
+	public function __construct($location = null, $size = null, $mime = null, $name = null, $hash = null)
 	{
-		if (!is_string($location)) {
-			trigger_error(__METHOD__ . ' expects arg #1 to be string, ' . gettype($location) . ' given', E_USER_WARNING);
-		}
-
 		$location = (string)$location;
 
 		/*if( !file_exists($location) )
