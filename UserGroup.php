@@ -3,6 +3,11 @@ namespace Asenine;
 
 class UserGroup
 {
+	public
+		$name,
+		$description,
+		$label;
+
 	public static function createInDB(self $UserGroup)
 	{
 		$timeCreated = time();
