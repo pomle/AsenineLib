@@ -37,19 +37,31 @@ class Dataset
 
 	public static function getPlugins()
 	{
-		$pluginFiles = glob(__DIR__ . '/../Type/*.php');
-
 		$plugins = array();
-		foreach($pluginFiles as $pluginFile)
-		{
-			if( !preg_match('/\/([A-Za-z0-9]+)\.php/u', $pluginFile, $className) )
+
+		$pluginPath = realpath(__DIR__ . '/Type');
+
+		if (false === $pluginPath) {
+			return $plugins;
+		}
+
+		$pluginPath .= '/';
+
+		$pluginFiles = glob($pluginPath . '*.php');
+
+		foreach ($pluginFiles as $pluginFile) {
+
+			if (!preg_match('/\/([A-Za-z0-9]+)\.php/u', $pluginFile, $className)) {
 				continue;
+			}
 
 			$className = '\\Asenine\\Media\\Type\\' . $className[1];
 
-			if( class_exists($className) )
+			if (class_exists($className)) {
 				$plugins[] = $className;
+			}
 		}
+
 		return $plugins;
 	}
 
@@ -68,8 +80,11 @@ class Dataset
 		$arr = array_filter($arr);
 		$arr = preg_grep('%' . ASENINE_DIR_MEDIA . '%', $arr, PREG_GREP_INVERT); // Remove source media file from list
 
-		foreach($arr as $index => $filename)
-			if( !is_file($filename) ) unset($arr[$index]);
+		foreach ($arr as $index => $filename) {
+			if (!is_file($filename)) {
+				unset($arr[$index]);
+			}
+		}
 
 		return $arr;
 	}
@@ -83,11 +98,13 @@ class Dataset
 	{
 		static $pluginNames;
 
-		if( !isset($pluginNames) )
-		{
+		if (!isset($pluginNames)) {
+
 			$pluginNames = array();
-			foreach(self::getPlugins() as $className)
+
+			foreach (self::getPlugins() as $className) {
 				$pluginNames[$className::TYPE] = $className::DESCRIPTION;
+			}
 
 			asort($pluginNames);
 		}
