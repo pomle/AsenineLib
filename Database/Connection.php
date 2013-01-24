@@ -82,7 +82,7 @@ class Connection
 	}
 
 	/**
-	 * Creates a new instance of Anonymous query class with this DB Connection attached to it,
+	 * Creates a new instance of Any query class with this DB Connection attached to it,
 	 * prepares a query and executes it, returning the PDOStatment.
 	 *
 	 * Example usage: self::execute("SELECT COUNT(*) FROM mytable WHERE id = %d", 123);
@@ -91,7 +91,7 @@ class Connection
 	 */
 	public function execute()
 	{
-		$Query = new Query\Anonymous($this);
+		$Query = new Query\Any($this);
 		$statement = $Query->prepare(func_get_args());
 		$Query->setQuery($statement);
 		return $Query->execute();

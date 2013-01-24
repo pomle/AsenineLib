@@ -6,9 +6,7 @@
  */
 namespace Asenine\Database\Query;
 
-use Asenine\Database\QueryException;
-
-class Anonymous extends \Asenine\Database\Query
+class Any extends \Asenine\Database\Query
 {
 	protected $statement = '';
 
