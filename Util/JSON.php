@@ -57,4 +57,74 @@ class JSON
 
 		return $jsonObject;
 	}
+
+	/**
+	 * Takes a JSON string and formats it so that it's readable by humans.
+	 *
+	 * @param string $s 	The JSON as string.
+	 * @param string $d 	String to use as indenter, defaults to tab.
+	 * @return string
+	 * @throws JSONException
+	 */
+	public static function prettify($s, $d = "\t") {
+
+		$b = ''; // Buffer.
+		$o = strlen($s); // Omega (end).
+		$i = 0; // Iterator.
+		$l = 0; // indentation Level.
+
+		/* Be aware that "continue;" increments $i by 1. */
+		do {
+			$c = $s[$i];
+
+			/* All whitespace out of quote is stripped. */
+			if (" " == $c || "\t" == $c || "\n" == $c) {
+				continue;
+			}
+
+			if ('{' == $c || '[' == $c) {
+				$b .= "\n" . str_repeat($d, $l++) . $c . "\n" . str_repeat($d, $l);
+				continue;
+			}
+
+			/* If we find a quote, buffer chars until next quote. */
+			if ("\"" == $c) {
+
+				do {
+					$b .= $c;
+
+					/* If we just buffered a backslash, buffer following char blindly and increment p. */
+					if ("\\" == $c) {
+						$b .= $s[++$i];
+					}
+
+					$c = $s[++$i];
+
+					if ($i >= $o) {
+						throw new JSONException('Malformed JSON.');
+					}
+
+				} while("\"" != $c || $i < $o);
+			}
+
+			if ('}' == $c || ']' == $c) {
+				$b .= "\n" . str_repeat($d, --$l) . $c;
+				continue;
+			}
+
+			$b .= $c;
+
+			/* If we just outputted a comma, go to new line and indent. */
+			if (',' == $c) {
+				$b .= "\n" . str_repeat($d, $l);
+			}
+			/* In case it was a colon, insert a space. */
+			elseif (":" == $c) {
+				$b .= ' ';
+			}
+
+		} while(++$i < $o);
+
+		return $b;
+	}
 }
