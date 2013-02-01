@@ -369,7 +369,7 @@ class File implements iFile
 
 	public function getMime()
 	{
-		if (is_null($this->mime)) {
+		if (is_null($this->mime) && $this->exists()) {
 			$finfo = finfo_open(FILEINFO_MIME_TYPE);
 			$this->mime = finfo_file($finfo, $this->location);
 			finfo_close($finfo);
