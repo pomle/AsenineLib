@@ -19,7 +19,7 @@ class TextArea extends Common\Root
 	}
 
 
-	public function __construct($name, $content = null, $cols, $rows)
+	public function __construct($name, $content = null, $cols = null, $rows = null)
 	{
 		$this->name = $name;
 		$this->content = $content;
