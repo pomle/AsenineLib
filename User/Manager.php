@@ -53,28 +53,54 @@ class Manager
 	public static function getPolicies($userID)
 	{
 		$query = DB::prepareQuery("SELECT
-				p.policy,
-				p.ID
-			FROM
-				asenine_policies p
-				JOIN asenine_user_policies up ON up.policy_id = p.ID
-			WHERE
-				up.user_id = %u
-			UNION SELECT
-				p.policy,
-				p.ID
-			FROM
-				asenine_policies p
-				JOIN asenine_user_group_policies ugp ON ugp.policy_id = p.ID
-				JOIN asenine_user_groups ug ON ug.ID = ugp.user_group_id
-				JOIN asenine_user_group_users ugu ON ugu.user_group_id = ug.ID
-			WHERE
-				ugu.user_id = %u
-			ORDER BY
-				policy ASC",
-			$userID, $userID);
+					p.policy,
+					p.id
+				FROM
+					asenine_policies p
+					JOIN asenine_user_policies up ON up.policy_id = p.id
+				WHERE
+					up.user_id = %d",
+			$userID);
 
-		$policies = DB::queryAndFetchArray($query);
+		$userPolicies = DB::queryAndFetchArray($query);
+
+		$query = DB::prepareQuery("WITH RECURSIVE inherited(user_group_id, depth, path, cycle) AS
+				(
+					SELECT
+						i.user_group_id,
+						1,
+						ARRAY[i.user_group_id],
+						false
+					FROM
+						asenine_user_group_inheritances i
+						JOIN asenine_user_group_users ugu ON ugu.user_group_id = i.user_group_id
+					WHERE
+						ugu.user_id = %d
+				UNION
+					SELECT
+						g.user_group_id_inherited,
+						i.depth + 1,
+						path || i.user_group_id,
+						g.user_group_id_inherited = ANY(path)
+					FROM
+						inherited i,
+						asenine_user_group_inheritances g
+					WHERE
+						g.user_group_id = i.user_group_id
+						AND NOT cycle
+				)
+			SELECT
+				p.policy,
+				p.id
+			FROM
+				inherited i
+				JOIN asenine_user_group_policies gp ON gp.user_group_id = i.user_group_id
+				JOIN asenine_policies p ON gp.policy_id = p.id",
+			$userID);
+
+		$groupPolicies = DB::queryAndFetchArray($query);
+
+		$policies = array_merge($userPolicies, $groupPolicies);
 
 		return $policies;
 	}
