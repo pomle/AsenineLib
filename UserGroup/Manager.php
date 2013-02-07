@@ -10,14 +10,15 @@ class Manager
 		$query = DB::prepareQuery("WITH RECURSIVE inherited(user_group_id, depth, path, cycle) AS
 				(
 					SELECT
-						i.user_group_id,
+						ug.id AS user_group_id,
 						1,
-						ARRAY[i.user_group_id],
+						ARRAY[ug.id],
 						false
 					FROM
-						asenine_user_group_inheritances i
+						asenine_user_groups ug
+						LEFT JOIN asenine_user_group_inheritances ugi ON ugi.user_group_id = ug.id
 					WHERE
-						i.user_group_id = %d
+						ug.id = %d
 				UNION
 					SELECT
 						g.user_group_id_inherited,
@@ -31,14 +32,16 @@ class Manager
 						g.user_group_id = i.user_group_id
 						AND NOT cycle
 				)
-			SELECT
+			SELECT DISTINCT
 				p.policy,
-				p.id
+				p.id AS policy_id
 			FROM
 				inherited i
 				JOIN asenine_user_group_policies gp ON gp.user_group_id = i.user_group_id
-				JOIN asenine_policies p ON gp.policy_id = p.id",
-		$userGroupID);
+				JOIN asenine_policies p ON gp.policy_id = p.id
+			ORDER BY
+				policy ASC",
+			$userGroupID);
 
 		$policies = DB::queryAndFetchArray($query);
 
