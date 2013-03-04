@@ -217,7 +217,7 @@ class User
 	 * @param string $username
 	 * @param string $password
 	 * @param string $trialToken
-	 * @throw \Asenine\UserException
+	 * @throws \Asenine\UserException
 	 * @return \Asenine\User
 	 */
 	public static function login($username, $password = null, $trialToken = null)
