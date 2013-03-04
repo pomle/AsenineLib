@@ -49,9 +49,8 @@ class SelectBox extends Common\Root
 			<?
 			if($this->isNoneSelectable) { ?><option value=""></option><? }
 
-			foreach($this->items as $key => $value)
-			{
-				$isSelected = ($this->selectedKey && $this->selectedKey == $key);
+			foreach($this->items as $key => $value) {
+				$isSelected = (!is_null($this->selectedKey) && $this->selectedKey == $key);
 				?><option value="<? echo htmlspecialchars($key); ?>" <? if($isSelected) echo 'selected="selected"'; ?>><? echo htmlspecialchars($value), '&emsp;'; ?></option><?
 			}
 			?>
