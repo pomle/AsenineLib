@@ -25,6 +25,7 @@ class User
 
 	protected
 		$csrfToken,
+		$isAdministrator,
 		$ip,
 		$IPsAllowed,
 		$IPsDenied,
@@ -34,7 +35,6 @@ class User
 		$userID,
 		$username,
 		$isEnabled,
-		$isAdministrator,
 		$isLoggedIn,
 		$timeAutoLogout,
 		$timeKickOut,
@@ -368,7 +368,7 @@ class User
 			WHERE
 				id = %u",
 			$User->isEnabled,
-			$User->isAdministrator,
+			$User->isAdministrator(),
 			$timeModified,
 			$User->timeAutoLogout,
 			$User->username,
@@ -524,7 +524,7 @@ class User
 
 	public function hasPolicy($policy)
 	{
-		return ( ($this->isAdministrator === true) || isset($this->policies[$policy]) );
+		return (true === $this->isAdministrator()) || isset($this->policies[$policy]);
 	}
 
 	/* Returns true if user has ALL of the supplied policies */
@@ -549,9 +549,23 @@ class User
 		return false;
 	}
 
-	public function isAdministrator()
+	/**
+	 * Sets or returns the administrator status.
+	 * If param is omitted, the current state is returned as boolean.
+	 *
+	 * @param bool $changeTo	TRUE will set the status to true, other values will set to false.
+	 * @return bool
+	 * @return self
+	 */
+	public function isAdministrator($changeTo = null)
 	{
-		return ($this->isAdministrator === true);
+		if (is_null($changeTo)) {
+			return (true === $this->isAdministrator);
+		}
+		else {
+			$this->isAdministrator = (true === $changeTo);
+			return $this;
+		}
 	}
 
 	public function isLoggedIn()
