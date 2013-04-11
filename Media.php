@@ -86,7 +86,7 @@ abstract class Media implements iMedia
 				f.hash = %s",
 			$Media->File->getHash());
 
-		$Archiver = new Archiver(ASENINE_DIR_MEDIA_SOURCE);
+		$Archiver = new Archiver(ASENINE_DIR_ARCHIVE_SOURCE);
 
 		/* Reuse File and/or Media from Library if already existing */
 		if($media = DB::queryAndFetchOne($query))
@@ -144,7 +144,7 @@ abstract class Media implements iMedia
 
 		$result = DB::queryAndFetchResult($query);
 
-		$Archiver = new Archiver(ASENINE_DIR_MEDIA_SOURCE);
+		$Archiver = new Archiver(ASENINE_DIR_ARCHIVE_SOURCE);
 
 		while($media = DB::assoc($result))
 		{
