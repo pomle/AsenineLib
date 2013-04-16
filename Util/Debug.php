@@ -24,7 +24,10 @@ class Debug
 			return $debug;
 		}
 		else {
-			trigger_error($debug, E_USER_NOTICE);
+			ob_start();
+			debug_print_backtrace();
+			$backtrace = ob_get_clean();
+			error_log("PHP Debug: " . $debug . "\n" . $backtrace);
 			return $production;
 		}
 	}
