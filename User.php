@@ -532,8 +532,11 @@ class User
 	{
 		$policies = is_array($policies) ? $policies : func_get_args();
 
-		foreach($policies as $policy)
-			if( $this->hasPolicy($policy) === false ) return false;
+		foreach ($policies as $policy) {
+			if (true !== $this->hasPolicy($policy)) {
+				return false;
+			}
+		}
 
 		return true;
 	}
@@ -543,8 +546,11 @@ class User
 	{
 		$policies = is_array($policies) ? $policies : func_get_args();
 
-		foreach($policies as $policy)
-			if( $this->hasPolicy($policy) === true ) return true;
+		foreach ($policies as $policy) {
+			if (true === $this->hasPolicy($policy)) {
+				return true;
+			}
+		}
 
 		return false;
 	}
