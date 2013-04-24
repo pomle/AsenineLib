@@ -98,8 +98,6 @@ class ImageGuru extends Common\Root
 
 		$command = sprintf('%s %s %s %s:%s', self::$exe_convert, join(' ', $inputFiles), join(' ', $options), $format, \escapeshellarg($outputFile));
 
-		asenineLog($command, 'ImageGuru');
-
 		if( self::runCommand($command) && file_exists($outputFile) && filesize($outputFile) > 0 )
 			return true;
 

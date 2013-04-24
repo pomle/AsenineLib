@@ -1,8 +1,6 @@
 <?
 namespace Asenine;
 
-asenineDef('ASENINE_ARCHIVE_PERM_CREATE', 0644);
-
 class ArchiverException extends \Exception
 {}
 
@@ -20,7 +18,7 @@ class Archiver
 
 		$this->depth = 4;
 		$this->split = 2;
-		$this->perms = ASENINE_ARCHIVE_PERM_CREATE;
+		$this->perms = 0644;
 	}
 
 

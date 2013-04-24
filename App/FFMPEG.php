@@ -32,8 +32,6 @@ class FFMPEG extends Common\Root
 
 		$command = sprintf('%s -y %s %s %s %s 2>&1', self::$exe_ffmpeg, join(' ', $optPre), join($inputFiles), join(' ', $optPost), $outputFile ? \escapeshellarg($outputFile) : '');
 
-		asenineLog($command, 'FFMPEG');
-
 		return self::runCommand($command);
 	}
 
