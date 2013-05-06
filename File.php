@@ -1,4 +1,9 @@
 <?
+/**
+ * File object used to simplify operations on Files in the file system.
+ *
+ * @author Pontus Persson <pom@spotify.com>
+ */
 namespace Asenine;
 
 class FileException extends \Exception
@@ -11,15 +16,13 @@ interface iFile
 
 class File implements iFile
 {
-	protected
-		$location,
-		$size,
-		$hash,
-		$extension;
+	protected $location;
+	protected $size;
+	protected $hash;
+	protected $extension;
 
-	public
-		$mime,
-		$name;
+	public $mime;
+	public $name;
 
 
 	public static function createInDB(self $File)
@@ -65,8 +68,7 @@ class File implements iFile
 	{
 		$d = $s = null;
 
-		try
-		{
+		try {
 			if (empty($fromURL)) {
 				throw New FileException('URL empty.');
 			}
@@ -114,8 +116,7 @@ class File implements iFile
 
 			return $File;
 		}
-		catch(\Exception $e)
-		{
+		catch(\Exception $e) {
 			if($d) {
 				fclose($d);
 			}
@@ -130,8 +131,7 @@ class File implements iFile
 
 	public static function fromPHPUpload($phpfile)
 	{
-		switch($phpfile['error'])
-		{
+		switch ($phpfile['error']) {
 			case UPLOAD_ERR_INI_SIZE:
 				throw new FileException('Uploaded file too large for the webserver');
 
@@ -230,12 +230,6 @@ class File implements iFile
 	{
 		$location = (string)$location;
 
-		/*if( !file_exists($location) )
-			throw New FileException(sprintf("Path does not exist: %s", $location));
-
-		if( !is_file($location) )
-			throw New FileException(sprintf("Path is not a file: %s", $location));*/
-
 		$this->location = $location;
 
 		### File size can only be integer and must not be negative
@@ -252,8 +246,7 @@ class File implements iFile
 	public function __get($key)
 	{
 		### Auto calculate hash and size if not available already
-		switch($key)
-		{
+		switch ($key) {
 			case 'hash':
 				return $this->getHash();
 			break;
@@ -420,9 +413,14 @@ class File implements iFile
 
 		ini_set('zlib.output_compression', 'off');
 		header('Accept-Ranges: bytes');
-		header('Content-Type: ' . $contentType);
+		header('Content-Description: File Transfer');
 		header('Content-Disposition: attachment; filename="' . $fileName . '"');
 		header('Content-Length: ' . $this->getSize());
+		header('Content-Transfer-Encoding: binary');
+		header('Content-Type: ' . $contentType);
+
+		ob_clean();
+		flush();
 
 		$res = @readfile($this->getLocation());
 
