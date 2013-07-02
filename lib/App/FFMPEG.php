@@ -127,10 +127,18 @@ class FFMPEG extends Common\Root
 		{
 			### Select the first audio stream
 			$audio = reset($streams['audio']);
-			list($audioFormat, $audioFrequency, $audioChannels, $audioBitrate) = explode(', ', substr($audio, strpos($audio, 'Audio:') + 7));
+			list($audioFormat, $audioFrequency, $audioChannels, $audioBitdepth, $audioBitrate) = explode(', ', substr($audio, strpos($audio, 'Audio:') + 7));
+
+			if( preg_match('%([0-9]+) kb/s%', $audioBitrate, $matches) ) {
+				$audioBitrate = (int)($matches[1] * 1000);
+			}
+			else {
+				$audioBitrate = null;
+			}
 
 			$audio = array
 			(
+				'bitrate' => $audioBitrate,
 				'frequency' => (int)$audioFrequency,
 				'format' => $audioFormat,
 				'channels' => ($audioChannels == 'mono' ? 1 : 2)
