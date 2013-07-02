@@ -64,6 +64,9 @@ abstract class Root implements iRoot
 
 	public function addData($prefix, $content)
 	{
+		if (is_array($content) || is_object($content)) {
+			$content = json_encode($content);
+		}
 		return $this->addAttr('data-' . $prefix, $content);
 	}
 
