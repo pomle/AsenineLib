@@ -71,21 +71,22 @@ class FFMPEG extends Common\Root
 
 		$time = null;
 		$duration = null;
-		if( preg_match('%Duration: (([0-9]{2}):([0-9]{2}):([0-9]{2})\.([0-9]{2})).*%', $streams['interleave'][0], $duration) )
+		if( preg_match('%Duration: (([0-9]{2}):([0-9]{2}):([0-9]{2})\.([0-9]{2})).*%', $streams['interleave'][0], $matches) )
 		{
 			$time = array
 			(
-				'c' => $duration[1],
-				'h' => (int)$duration[2],
-				'm' => (int)$duration[3],
-				's' => (int)$duration[4],
-				'f' => (float)($duration[5] / 100)
+				'c' => $matches[1],
+				'h' => (int)$matches[2],
+				'm' => (int)$matches[3],
+				's' => (int)$matches[4],
+				'f' => (float)($matches[5] / 100)
 			);
 			$duration = ($time['h'] * 3600) + ($time['m'] * 60) + $time['s'] + $time['f'];
 		}
 
-		if( preg_match('%bitrate: ([0-9]+)(.*)/%', $streams['interleave'][0], $bitrate) )
-			$bitrate = (int)($bitrate[1] * 1000);
+		$bitrate = null;
+		if( preg_match('%bitrate: ([0-9]+)(.*)/%', $streams['interleave'][0], $matches) )
+			$bitrate = (int)($matches[1] * 1000);
 
 		$video = null;
 		if( count($streams['video']) > 0 )
@@ -109,13 +110,11 @@ class FFMPEG extends Common\Root
 			if( is_numeric($duration) && is_numeric($fps) )
 				$frames = floor($duration * $fps);
 
-			$video = array
-			(
+			$video = array(
 				'size' => $videoSize,
 				'fps' => $fps,
 				'frames' => $frames,
-				'aspect' => array
-				(
+				'aspect' => array(
 					'pixel' => $pixelAspectRatio,
 					'display' => $displayAspectRatio
 				)
@@ -127,26 +126,23 @@ class FFMPEG extends Common\Root
 		{
 			### Select the first audio stream
 			$audio = reset($streams['audio']);
-			list($audioFormat, $audioFrequency, $audioChannels, $audioBitdepth, $audioBitrate) = explode(', ', substr($audio, strpos($audio, 'Audio:') + 7));
+			$dataString = substr($audio, strpos($audio, 'Audio:') + 7);
+			$audioInfo = explode(', ', $dataString);
 
-			if( preg_match('%([0-9]+) kb/s%', $audioBitrate, $matches) ) {
+			$audioBitrate = null;
+			if (isset($audioInfo[4]) && preg_match('%([0-9]+) kb/s%', $audioInfo[4], $matches) ) {
 				$audioBitrate = (int)($matches[1] * 1000);
 			}
-			else {
-				$audioBitrate = null;
-			}
 
-			$audio = array
-			(
+			$audio = array(
 				'bitrate' => $audioBitrate,
-				'frequency' => (int)$audioFrequency,
-				'format' => $audioFormat,
-				'channels' => ($audioChannels == 'mono' ? 1 : 2)
+				'frequency' => (int)$audioInfo[1],
+				'format' => $audioInfo[0],
+				'channels' => ($audioInfo[2] == 'mono' ? 1 : 2)
 			);
 		}
 
-		return array
-		(
+		return array(
 			'format' => $format,
 			'bitrate' => $bitrate,
 			'duration' => $duration,
