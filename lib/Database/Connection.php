@@ -34,7 +34,7 @@ class Connection
 	 */
 	public function begin()
 	{
-		$this->PDO->beginTransaction();
+		$this->getPDO()->beginTransaction();
 		return $this;
 	}
 
@@ -46,7 +46,7 @@ class Connection
 	 */
 	public function commit()
 	{
-		$this->PDO->commit();
+		$this->getPDO()->commit();
 
 		return $this;
 	}
@@ -78,7 +78,7 @@ class Connection
 			return static::TYPE_NULL;
 		}
 
-		return $this->PDO->quote((string)$value);
+		return $this->getPDO()->quote((string)$value);
 	}
 
 	/**
@@ -125,7 +125,7 @@ class Connection
 	 */
 	public function lastInsertId($name = null)
 	{
-		return $this->PDO->lastInsertId($name);
+		return $this->getPDO()->lastInsertId($name);
 	}
 
 	/**
@@ -137,10 +137,10 @@ class Connection
 	 */
 	public function query($query)
 	{
-		$Result = $this->PDO->query($query);
+		$Result = $this->getPDO()->query($query);
 
 		if (false === $Result) {
-			$errors = $this->PDO->errorInfo();
+			$errors = $this->getPDO()->errorInfo();
 			throw new Exception(Debug::log('Error in query: "' . $query . '": ' . $errors[2]));
 		}
 
@@ -155,7 +155,7 @@ class Connection
 	 */
 	public function rollback()
 	{
-		$this->PDO->rollBack();
+		$this->getPDO()->rollBack();
 
 		return $this;
 	}

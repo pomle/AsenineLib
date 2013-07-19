@@ -246,7 +246,7 @@ class DB
 
 try
 {
-	DB::addPDO(\Spotify\Scatman\Controller\DB::getReadWrite()->getPDO());
+	DB::addPDO(\Spotify\Scatman\Controller\DB::getReadWrite('scatman')->getPDO());
 }
 catch(\Exception $e)
 {

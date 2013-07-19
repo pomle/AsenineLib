@@ -224,8 +224,9 @@ class User
 	{
 		try
 		{
-			if(!strlen($username) || !strlen($password) && !strlen($trialToken))
+			if (!strlen($username) || !strlen($password) && !strlen($trialToken)) {
 				throw new UserException('Insufficient credentials supplied, missing username, password or token.');
+			}
 
 			$query = DB::prepareQuery("SELECT
 					id AS user_id,
@@ -238,8 +239,9 @@ class User
 					AND username = %s LIMIT 1",
 				$username);
 
-			if(!$user = DB::queryAndFetchOne($query))
+			if (!$user = DB::queryAndFetchOne($query)) {
 				throw new UserException('Username invalid or user login not enabled.');
+			}
 
 			list($userID, $storedToken, $timeToken) = array_values($user);
 

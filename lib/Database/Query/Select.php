@@ -18,6 +18,7 @@ class Select extends \Asenine\Database\Query
 	protected
 		$cols = array(),
 		$from = array(),
+		$join = array(),
 		$where = array(),
 		$group = array(),
 		$having = array(),
@@ -48,6 +49,9 @@ class Select extends \Asenine\Database\Query
 			return '';
 		}
 
+		if (count($this->join)) {
+			$query .= join(' ', $this->join);
+		}
 
 		if (count($this->where)) {
 			$query .= ' WHERE ' . join(' AND ', $this->where);
@@ -76,7 +80,7 @@ class Select extends \Asenine\Database\Query
 
 	public function cols($cols)
 	{
-		$this->cols = is_array($cols) ? $cols : func_get_args();
+		$this->cols = array_merge($this->cols, is_array($cols) ? $cols : func_get_args());
 		return $this;
 	}
 
@@ -100,26 +104,22 @@ class Select extends \Asenine\Database\Query
 
 	public function join($table, $type = self::JOIN_INNER)
 	{
-		if (0 == count($this->from)) {
-			throw new QueryException('Can not JOIN on empty FROM clause.');
-		}
-
-		$this->from(' ' . strtoupper($type) . ' JOIN ' . $table);
+		$this->join[] = $type . ' JOIN ' . $table;
 		return $this;
 	}
 
-	public function limit($offset, $limit = null)
+	public function limit($offset, $limit)
 	{
-		if (!is_int($offset)) {
+		if (!is_null($offset) && !is_int($offset)) {
 			throw new QueryException('Offset must be integer.');
 		}
 
-		if (!is_int($limit)) {
+		if (!is_null($limit) && !is_int($limit)) {
 			throw new QueryException('Limit must be integer.');
 		}
 
-		$this->offset = (int)$offset;
-		$this->limit = (int)$limit;
+		$this->offset = $offset;
+		$this->limit = $limit;
 
 		return $this;
 	}
