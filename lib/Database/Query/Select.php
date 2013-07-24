@@ -15,16 +15,15 @@ class Select extends \Asenine\Database\Query
 	const JOIN_LEFT = 'LEFT';
 	const JOIN_RIGHT = 'RIGHT';
 
-	protected
-		$cols = array(),
-		$from = array(),
-		$join = array(),
-		$where = array(),
-		$group = array(),
-		$having = array(),
-		$order = array(),
-		$offset = null,
-		$limit = null;
+	protected $cols = array();
+	protected $from = array();
+	protected $join = array();
+	protected $where = array();
+	protected $group = array();
+	protected $having = array();
+	protected $order = array();
+	protected $offset = null;
+	protected $limit = null;
 
 
 	public function __toString()
@@ -50,7 +49,7 @@ class Select extends \Asenine\Database\Query
 		}
 
 		if (count($this->join)) {
-			$query .= join(' ', $this->join);
+			$query .= ' ' . join(' ', $this->join);
 		}
 
 		if (count($this->where)) {
