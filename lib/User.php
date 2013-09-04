@@ -6,14 +6,12 @@
  */
 namespace Asenine;
 
-class UserException extends \Exception
-{}
-
+use \Asenine\User\AccessToken;
+use \Asenine\User\UserException;
 
 class User
 {
 	const TOKEN_COOKIE_LIFE = 172800; // 60*60*24*20
-	const TOKEN_LIFE = 172800; // 60*60*24*20
 
 	const USERNAME_MIN_LEN = 1;
 	const USERNAME_MAX_LEN = 32;
@@ -22,6 +20,8 @@ class User
 	const PASSWORD_MAX_AGE = null;
 
 	const FAIL_LOCK = 10;
+
+	public static $authTokenCookieName = 'asenine_user_login_token';
 
 	protected
 		$csrfToken,
@@ -57,8 +57,9 @@ class User
 		$chars = str_split('./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz');
 		$charCount = 22;
 
-		while($charCount--)
+		while ($charCount--) {
 			$salt .= $chars[array_rand($chars)];
+		}
 
 		return $salt;
 	}
@@ -79,7 +80,8 @@ class User
 			throw new \Exception("bcrypt not supported in this installation. See http://php.net/crypt");
 		}
 
-		if (($saltLen = strlen($salt)) < 22) {
+		$saltLen = strlen($salt);
+		if ($saltLen < 22) {
 			throw new \Exception("Illegal salt.");
 		}
 
@@ -118,8 +120,8 @@ class User
 			$timeCreated,
 			$timeCreated);
 
-		if( $userID = (int)DB::queryAndGetID($query, 'asenine_users_id_seq') )
-		{
+		$userID = (int)DB::queryAndGetID($query, 'asenine_users_id_seq');
+		if ($userID) {
 			$User->userID = (int)$userID;
 			$User->timeCreated = $timeCreated;
 			$User->timeModified = $timeCreated;
@@ -165,8 +167,7 @@ class User
 
 		$result = DB::fetch($query);
 
-		while($user = DB::assoc($result))
-		{
+		while ($user = DB::assoc($result)) {
 			$userID = (int)$user['user_id'];
 
 			$User = new static($userID);
@@ -211,6 +212,41 @@ class User
 		return static::loadFromDB(User\Dataset::getUserID($username));
 	}
 
+	protected function loginUser($userID)
+	{
+		/* All tests passed, proceed with setting up logged in user object */
+		$User = self::loadFromDB($userID);
+		if (!$User) {
+			throw new UserException('User could not be loaded from database.');
+		}
+
+		$User->isLoggedIn = true;
+
+		$User->enforceSecurity();
+
+		$User->settings = User\Manager::getSettings($User->userID);
+		$User->preferences = User\Manager::getPreferences($User->userID);
+
+		/* Update database to reflect latest login result */
+		$now = time();
+
+		$query = DB::prepareQuery("UPDATE
+				asenine_users
+			SET
+				count_logins_successful = count_logins_successful + 1,
+				count_logins_failed_streak = 0,
+				time_last_login = %d
+			WHERE
+				id = %u",
+			$now,
+			$now,
+			$User->getID());
+
+		DB::queryAndCountAffected($query);
+
+		return $User;
+	}
+
 	/**
 	 * Logs a user in with either password or token
 	 *
@@ -220,18 +256,16 @@ class User
 	 * @throws \Asenine\UserException
 	 * @return \Asenine\User
 	 */
-	public static function login($username, $password = null, $trialToken = null)
+	public static function loginWithPassword($username, $password)
 	{
 		try
 		{
-			if (!strlen($username) || !strlen($password) && !strlen($trialToken)) {
-				throw new UserException('Insufficient credentials supplied, missing username, password or token.');
+			if (!strlen($username) || !strlen($password)) {
+				throw new UserException('Insufficient credentials supplied, missing username or password.');
 			}
 
 			$query = DB::prepareQuery("SELECT
-					id AS user_id,
-					password_authtoken,
-					time_authtoken_created
+					id AS user_id
 				FROM
 					asenine_users
 				WHERE
@@ -239,37 +273,18 @@ class User
 					AND username = %s LIMIT 1",
 				$username);
 
-			if (!$user = DB::queryAndFetchOne($query)) {
+			$userID = DB::queryAndFetchOne($query);
+
+			if (!$userID) {
 				throw new UserException('Username invalid or user login not enabled.');
 			}
 
-			list($userID, $storedToken, $timeToken) = array_values($user);
-
-			try
-			{
-				if($isPasswordLogin = (isset($password) && strlen($password)))
-				{
-					if(self::verifyPassword($userID, $password) !== true)
-						throw new UserException('Password mismatch.');
-				}
-				elseif(isset($trialToken) && strlen($trialToken))
-				{
-					if(strlen($storedToken) < 32)
-						throw new UserException('Saved token invalid.');
-
-					if(($timeToken + self::TOKEN_LIFE) < time())
-						throw new UserException('Token has expired.');
-
-					if(!Util\Token::safeCompare($storedToken, $trialToken))
-						throw new UserException('Token in DB mismatches token in Cookie.');
-				}
-				else
-				{
-					throw new UserException('No valid means of authentication supplied.');
+			try {
+				if (true !== self::verifyPassword($userID, $password)) {
+					throw new UserException('Password mismatch.');
 				}
 			}
-			catch(UserException $e)
-			{
+			catch (UserException $e) {
 				/* If login fails, remove token and increment streaks.
 					Also disables user if fail streak is too high. */
 				$query = DB::prepareQuery("UPDATE
@@ -277,13 +292,11 @@ class User
 					SET
 						count_logins_failed = count_logins_failed + %d,
 						count_logins_failed_streak = count_logins_failed_streak + %d,
-						is_enabled = (count_logins_failed_streak < %u),
-						password_authtoken = NULL,
-						time_authtoken_created = NULL
+						is_enabled = (count_logins_failed_streak < %u)
 					WHERE
 						id = %u",
-					$isPasswordLogin ? 1 : 0,
-					$isPasswordLogin ? 1 : 0,
+					1,
+					1,
 					self::FAIL_LOCK,
 					$userID);
 
@@ -292,53 +305,29 @@ class User
 				throw new UserException($e->getMessage());
 			}
 
-
-			/* All tests passed, proceed with setting up logged in user object */
-			if(!$User = self::loadFromDB($userID))
-				throw new UserException('User could not be loaded from database.');
-
-			$User->isLoggedIn = true;
-
-			$User->enforceSecurity();
-
-			$User->settings = User\Manager::getSettings($User->userID);
-			$User->preferences = User\Manager::getPreferences($User->userID);
-
-
-			/* Create a token for autologin and deploy in cookie together with username */
-			$newToken = hash_hmac('ripemd160', $User->username . microtime() . uniqid(true), 'c9q7rc98qcur9q8wytkcq09tucw89y');
-			setcookie('username', $User->username, time() + 60*60*24*30, '/');
-			setcookie('authtoken',	$newToken, time() + self::TOKEN_COOKIE_LIFE, '/');
-
-
-			/* Update database to reflect latest login result */
-			$now = time();
-
-			$query = DB::prepareQuery("UPDATE
-					asenine_users
-				SET
-					count_logins_successful = count_logins_successful + 1,
-					count_logins_failed_streak = 0,
-					time_last_login = %d,
-					time_authtoken_created = %d,
-					password_authtoken = %s
-				WHERE
-					id = %u",
-				$now,
-				$now,
-				$newToken,
-				$User->getID());
-
-			DB::queryAndCountAffected($query);
-
-			return $User;
+			return self::loginUser($userID);
 		}
-		catch(UserException $e)
-		{
+		catch (UserException $e) {
 			throw new UserException(DEBUG ? $e->getMessage() : 'Login Failed.');
-
-			return false;
 		}
+	}
+
+	public static function loginWithToken($accessToken)
+	{
+		try {
+			$AccessToken = AccessToken::decode($accessToken);
+			$userID = $AccessToken->validate();
+			$AccessToken->invalidate();
+			return self::loginUser($userID);
+		}
+		catch (\Exception $e) {
+			throw new UserException(DEBUG ? $e->getMessage() : 'Login Failed.');
+		}
+	}
+
+	public static function rememberMe(self $User)
+	{
+		return AccessToken::createForUser($User);
 	}
 
 	/* Removes a user from database */
@@ -584,22 +573,11 @@ class User
 	/* Explicitly logs the user out and destroys authorization token */
 	public function logout()
 	{
-		if( $this->isLoggedIn !== true ) return false;
-
-		$query = DB::prepareQuery("UPDATE
-				asenine_users
-			SET
-				password_authtoken = NULL,
-				time_authtoken_created = NULL
-			WHERE
-				ID = %u",
-			$this->userID);
-
-		DB::queryAndCountAffected($query);
+		if (true !== $this->isLoggedIn) {
+			return false;
+		}
 
 		$this->isLoggedIn = false;
-
-		setcookie('authtoken', '', 0, '/');
 
 		return true;
 	}
