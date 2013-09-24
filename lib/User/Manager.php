@@ -180,7 +180,7 @@ class Manager
 
 		if( count($settings) > 0 )
 		{
-			$query = "REPLACE INTO Asenine_UserSettings (userID, name, value) VALUES";
+			$query = "INSERT INTO asenine_user_settings (user_id, name, value) VALUES";
 			foreach($settings as $key => $value)
 			{
 				$query .= DB::prepareQuery('(%u, %s, %s),', $userID, $key, $value);
