@@ -23,6 +23,9 @@ class User
 
 	const FAIL_LOCK = 10;
 
+	private
+		$isSettingsChanged = false;
+
 	protected
 		$csrfToken,
 		$isAdministrator,
@@ -425,10 +428,13 @@ class User
 
 	public function __destruct()
 	{
-		if( $this->isLoggedIn() )
-		{
+		if ($this->isLoggedIn()) {
 			User\Manager::setPreferences($this->userID, $this->preferences);
-			User\Manager::setSettings($this->userID, $this->settings);
+			if ($this->isSettingsChanged) {
+				error_log('Updating settings');
+				User\Manager::setSettings($this->userID, $this->settings);
+				$this->isSettingsChanged = false;
+			}
 		}
 	}
 
@@ -439,8 +445,9 @@ class User
 
 	public function __wakeup()
 	{
-		if( $this->isLoggedIn() )
+		if ($this->isLoggedIn()) {
 			$this->enforceSecurity();
+		}
 	}
 
 
@@ -450,7 +457,7 @@ class User
 		return $this;
 	}
 
-	/* Updates security state and takes action to log the user out if any of them match */
+	/* Updates security state anset takes action to log the user out if any of them match */
 	public function enforceSecurity()
 	{
 		$this->updateSecurity();
@@ -620,6 +627,8 @@ class User
 
 		else
 			$this->settings[$key] = $value;
+
+		$this->isSettingsChanged = true;
 
 		return true;
 	}
