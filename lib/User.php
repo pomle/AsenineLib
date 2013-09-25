@@ -431,7 +431,6 @@ class User
 		if ($this->isLoggedIn()) {
 			User\Manager::setPreferences($this->userID, $this->preferences);
 			if ($this->isSettingsChanged) {
-				error_log('Updating settings');
 				User\Manager::setSettings($this->userID, $this->settings);
 				$this->isSettingsChanged = false;
 			}
