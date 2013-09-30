@@ -243,12 +243,3 @@ class DB
 		return self::$PDO->beginTransaction();
 	}
 }
-
-try
-{
-	DB::addPDO(\Spotify\Scatman\Controller\DB::getReadWrite('scatman')->getPDO());
-}
-catch(\Exception $e)
-{
-	die( DEBUG ? sprintf('Database Initialization Failed with DSN %s, Reason: %s', ASENINE_PDO_DSN, $e->getMessage()) : 'System Failure');
-}
