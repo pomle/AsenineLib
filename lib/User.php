@@ -303,6 +303,7 @@ class User
 			$User->isLoggedIn = true;
 
 			$User->enforceSecurity();
+			$User->wakeUp();
 
 			$User->settings = User\Manager::getSettings($User->userID);
 			$User->preferences = User\Manager::getPreferences($User->userID);
@@ -336,7 +337,7 @@ class User
 
 			return $User;
 		}
-		catch(UserException $e)
+		catch(\Exception $e)
 		{
 			throw new UserException(DEBUG ? $e->getMessage() : 'Login Failed.');
 
@@ -442,10 +443,11 @@ class User
 		return $this->$key;
 	}
 
-	public function __wakeup()
+	final public function __wakeup()
 	{
 		if ($this->isLoggedIn()) {
 			$this->enforceSecurity();
+			$this->wakeUp();
 		}
 	}
 
@@ -457,7 +459,7 @@ class User
 	}
 
 	/* Updates security state anset takes action to log the user out if any of them match */
-	public function enforceSecurity()
+	final public function enforceSecurity()
 	{
 		$this->updateSecurity();
 
@@ -651,5 +653,9 @@ class User
 
 		$this->IPsAllowed = $ipPools['allow'];
 		$this->IPsDenied = $ipPools['deny'];
+	}
+
+	protected function wakeUp()
+	{
 	}
 }
