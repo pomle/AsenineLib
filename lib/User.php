@@ -168,8 +168,7 @@ class User
 
 		$result = DB::fetch($query);
 
-		while($user = DB::assoc($result))
-		{
+		while ($user = DB::assoc($result)) {
 			$userID = (int)$user['user_id'];
 
 			$User = new static($userID);
@@ -197,6 +196,16 @@ class User
 
 		/* Removes any illegal ID pointer placeholders */
 		$users = array_filter($users);
+		$userIDs = array_keys($users);
+
+		if (count($userIDs)) {
+			$query = DB::prepareQuery("SELECT user_id, name, value FROM asenine_user_settings WHERE user_id IN %a", $userIDs);
+			$result = DB::fetch($query);
+
+			while ($row = DB::assoc($result)) {
+				$users[(int)$row['user_id']]->settings[$row['name']] = $row['value'];
+			}
+		}
 
 		return $returnArray ? $users : reset($users);
 	}
