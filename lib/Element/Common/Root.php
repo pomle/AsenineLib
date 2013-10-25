@@ -79,6 +79,12 @@ abstract class Root implements iRoot
 		return $this;
 	}
 
+	public function addHtml($string)
+	{
+		$this->addChild(htmlspecialchars((string)$string));
+		return $this;
+	}
+
 	public function addStyle($key, $value)
 	{
 		$this->styles[$key] = $value;
