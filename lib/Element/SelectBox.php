@@ -5,30 +5,30 @@ class SelectBox extends Common\Root
 {
 	public
 		$name,
-		$selectedKey,
+		$value,
 		$items;
 
 
-	public static function keyValue($name, $selectedKey, Array $values)
+	public static function keyValue($name, $value, Array $values)
 	{
-		$SelectBox = new self($name, $selectedKey);
+		$SelectBox = new self($name, $value);
 		$SelectBox->addItemsFromArray($values, true);
 		return $SelectBox;
 	}
 
-	public static function keyPair($name, $selectedKey, Array $values)
+	public static function keyPair($name, $value, Array $values)
 	{
-		$SelectBox = new self($name, $selectedKey);
+		$SelectBox = new self($name, $value);
 		$SelectBox->addItemsFromArray($values, false);
 		return $SelectBox;
 	}
 
 
 
-	public function __construct($name = null, $selectedKey = null, Array $items = array(), $valueIsKey = false)
+	public function __construct($name = null, $value = null, Array $items = array(), $valueIsKey = false)
 	{
 		$this->name = $name;
-		$this->selectedKey = $selectedKey;
+		$this->value = $value;
 		$this->items = $items;
 
 		if (count($items) && $valueIsKey) {
@@ -40,8 +40,8 @@ class SelectBox extends Common\Root
 
 	public function __toString()
 	{
-		$this->addData('clear', $this->selectedKey);
-		$this->addData('origin', $this->selectedKey);
+		$this->addData('clear', $this->value);
+		$this->addData('origin', $this->value);
 
 		ob_start();
 		?>
@@ -50,7 +50,7 @@ class SelectBox extends Common\Root
 			if($this->isNoneSelectable) { ?><option value=""></option><? }
 
 			foreach($this->items as $key => $value) {
-				$isSelected = (!is_null($this->selectedKey) && $this->selectedKey == $key);
+				$isSelected = (!is_null($this->value) && $this->value == $key);
 				?><option value="<? echo htmlspecialchars($key); ?>" <? if($isSelected) echo 'selected="selected"'; ?>><? echo htmlspecialchars($value), '&emsp;'; ?></option><?
 			}
 			?>
