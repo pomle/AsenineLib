@@ -53,14 +53,18 @@ class Query
 		/* Handle both arrays and argument lists. */
 		$params = is_array($params) ? $params : func_get_args();
 
+		/* If there are no arguments following the first, we don't have to handle anything. */
+		if (1 == count($params)) {
+			return $params[0];
+		}
+
 		/* Shift of first argument and treat as the query template. */
 		$query = array_shift($params);
 
 		$Connection = $this->Connection;
 
 		/* Define the closure that acts as the callback to preg_replace_callback. */
-		$injector = function($matches) use($query, $params, $Connection)
-		{
+		$injector = function($matches) use($query, $params, $Connection) {
 			static $index;
 
 			if (!isset($index)) {
