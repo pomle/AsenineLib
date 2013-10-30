@@ -15,20 +15,25 @@ class Select extends \Asenine\Database\Query
 	const JOIN_LEFT = 'LEFT';
 	const JOIN_RIGHT = 'RIGHT';
 
-	protected $cols = array();
-	protected $from = array();
-	protected $join = array();
-	protected $where = array();
-	protected $group = array();
-	protected $having = array();
-	protected $order = array();
-	protected $offset = null;
-	protected $limit = null;
+	public $distinct = false;
+	public $cols = array();
+	public $from = array();
+	public $join = array();
+	public $where = array();
+	public $group = array();
+	public $having = array();
+	public $order = array();
+	public $offset = null;
+	public $limit = null;
 
 
 	public function __toString()
 	{
 		$query = 'SELECT';
+
+		if ($this->distinct) {
+			$query .= ' DISTINCT';
+		}
 
 
 		if (count($this->cols)) {
@@ -109,12 +114,13 @@ class Select extends \Asenine\Database\Query
 
 	public function limit($offset, $limit)
 	{
-		if (!is_null($offset) && !is_int($offset)) {
-			throw new QueryException('Offset must be integer.');
-		}
-
-		if (!is_null($limit) && !is_int($limit)) {
-			throw new QueryException('Limit must be integer.');
+		if (!is_null($offset) || !is_null($limit)) {
+			if (!is_int($offset)) {
+				throw new QueryException('Offset must be integer.');
+			}
+			if (!is_int($limit)) {
+				throw new QueryException('Limit must be integer.');
+			}
 		}
 
 		$this->offset = $offset;
@@ -123,23 +129,28 @@ class Select extends \Asenine\Database\Query
 		return $this;
 	}
 
-	public function order()
+	public function order($order)
 	{
-		$fields = func_get_args();
-
-		$last = end($fields);
-
-		/* If last argument is either DESC or ASC then use it as flag. */
-		if (preg_match('/ASC|DESC/i', $last, $match)) {
-			$scending = strtoupper($match[0]);
-			array_pop($fields);
+		if (is_null($order)) {
+			$this->order = array();
 		}
 		else {
-			$scending = 'ASC';
-		}
+			$fields = func_get_args();
 
-		foreach ($fields as $field) {
-			$this->order[] =  $field . ' ' . $scending;
+			$last = end($fields);
+
+			/* If last argument is either DESC or ASC then use it as flag. */
+			if (preg_match('/ASC|DESC/i', $last, $match)) {
+				$scending = strtoupper($match[0]);
+				array_pop($fields);
+			}
+			else {
+				$scending = 'ASC';
+			}
+
+			foreach ($fields as $field) {
+				$this->order[] =  $field . ' ' . $scending;
+			}
 		}
 
 		return $this;
