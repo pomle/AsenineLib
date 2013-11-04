@@ -332,7 +332,9 @@ class File implements iFile
 	{
 		if (!isset($this->extension)) {
 
-			if (($n = explode('.', $this->name)) && ($ext = end($n))) {
+			$parts = explode('.', $this->name);
+
+			if (count($parts) > 1 && strlen($ext = array_pop($parts)) < 5) {
 				$this->extension = $ext;
 			}
 			elseif (($m = explode('/', $this->getMime())) && ($ext = end($m))) {
@@ -383,6 +385,14 @@ class File implements iFile
 		}
 
 		return $this->size;
+	}
+
+	public function point($location)
+	{
+		$File = clone $this;
+		$File->hash = null;
+		$File->location = $location;
+		return $File;
 	}
 
 	public function reads()

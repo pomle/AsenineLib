@@ -143,7 +143,7 @@ class Archiver
 			chmod($ArchivedFile->getLocation(), $this->perms);
 		}
 		else {
-			$ArchivedFile = new File($archiveFileName);
+			$ArchivedFile = $File->point($archiveFileName);
 		}
 
 		return $ArchivedFile;
