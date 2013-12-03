@@ -301,7 +301,7 @@ class User
 
 				DB::queryAndCountAffected($query);
 
-				throw new UserException($e->getMessage());
+				throw $e;
 			}
 
 
@@ -346,11 +346,9 @@ class User
 
 			return $User;
 		}
-		catch(\Exception $e)
+		catch(UserException $e)
 		{
-			throw new UserException(DEBUG ? $e->getMessage() : 'Login Failed.');
-
-			return false;
+			throw $e;
 		}
 	}
 
