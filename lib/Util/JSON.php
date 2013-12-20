@@ -83,7 +83,13 @@ class JSON
 			}
 
 			if ('{' == $c || '[' == $c) {
-				$b .= "\n" . str_repeat($d, $l++) . $c . "\n" . str_repeat($d, $l);
+				$n = $s[$i+1];
+				if (('{' == $c && '}' == $n) || ('[' == $c && ']' == $n)) {
+					$b .= $c.$n;
+					$i++;
+					continue;
+				}
+				$b .= $c . "\n" . str_repeat($d, ++$l);
 				continue;
 			}
 
@@ -98,13 +104,14 @@ class JSON
 						$b .= $s[++$i];
 					}
 
+
 					$c = $s[++$i];
 
 					if ($i >= $o) {
 						throw new JSONException('Malformed JSON.');
 					}
 
-				} while("\"" != $c || $i < $o);
+				} while("\"" != $c);
 			}
 
 			if ('}' == $c || ']' == $c) {
