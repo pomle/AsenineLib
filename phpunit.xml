@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<phpunit bootstrap="./test/Bootstrap.php" verbose="true" colors="true">
+	<testsuites>
+		<testsuite name="Asenine">
+			<directory suffix=".php">test/Asenine/</directory>
+		</testsuite>
+	</testsuites>
+	<logging>
+		<log type="junit" target="./report.xml" logIncompleteSkipped="true"/>
+	</logging>
+</phpunit>
