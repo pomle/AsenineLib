@@ -31,7 +31,7 @@ abstract class Root implements iRoot
 
 	public function addAttr($key, $value)
 	{
-		$this->attributes[(string)$key][] = (string)$value;
+		$this->attributes[(string)$key][] = $value;
 		return $this;
 	}
 
@@ -51,7 +51,10 @@ abstract class Root implements iRoot
 
 	public function addClass($class)
 	{
-		return $this->addAttr('class', $class);
+		foreach (func_get_args() as $class) {
+			$this->addAttr('class', $class);
+		}
+		return $this;
 	}
 
 	public function addClasses($array)
