@@ -28,7 +28,7 @@ abstract class Preset implements iPreset
 			$filePath = $this->getFullFilePath();
 
 
-			if( !$resource = fopen($filePath, "c") )
+			if( !$resource = @fopen($filePath, "c") )
 				throw New \Exception("Could not create handle for \"$filePath\"");
 
 			while( true )
