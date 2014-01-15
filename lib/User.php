@@ -436,7 +436,7 @@ class User
 
 	public function __destruct()
 	{
-		if ($this->isLoggedIn()) {
+		if (!is_null($this->userID) && $this->isLoggedIn()) {
 			User\Manager::setPreferences($this->userID, $this->preferences);
 			if ($this->isSettingsChanged) {
 				User\Manager::setSettings($this->userID, $this->settings);
