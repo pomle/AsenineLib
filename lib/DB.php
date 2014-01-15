@@ -243,3 +243,14 @@ class DB
 		return self::$PDO->beginTransaction();
 	}
 }
+
+/*
+	Set up old singleton DB connection.
+	TODO: Deprecate.
+*/
+try {
+	\Asenine\DB::addPDO(\Spotify\Scatman\Controller\DB::getReadWrite('scatman')->getPDO());
+}
+catch (\Exception $e) {
+	throw new \Exception($e->getMessage());
+}
