@@ -498,8 +498,7 @@ class User
 
 	public function dropPolicy($policy)
 	{
-		if(isset($this->policies[$policy]))
-		{
+		if (isset($this->policies[$policy])) {
 			unset($this->policies[$policy]);
 		}
 		return $this;
@@ -527,11 +526,10 @@ class User
 
 	public function getSetting($key)
 	{
-		if( isset($this->settings[$key]) )
+		if (isset($this->settings[$key])) {
 			return $this->settings[$key];
-
-		else
-			return null;
+		}
+		return null;
 	}
 
 	public function getStoredIP()
