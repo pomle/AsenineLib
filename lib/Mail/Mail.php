@@ -13,8 +13,16 @@ class Mail
 
 
 	public function __construct()
+	{}
+
+	public function __toString()
 	{
+		return join("\n", $this->_headers()) . "\n"
+		. "To: " . join(", ", $this->to) . "\n"
+		. "Subject: " . $this->_subject() . "\n"
+		. $this->_body();
 	}
+
 
 
 	public function address($address, $name = null)
@@ -81,6 +89,17 @@ class Mail
 
 	public function send()
 	{
+		return mail(join(',', $this->to), $this->_subject(), $this->_body(), join("\r\n", $this->_headers()));
+	}
+
+
+	protected function _body()
+	{
+		return $this->body;
+	}
+
+	protected function _headers()
+	{
 		$headers = array();
 		if ($this->from) {
 			$headers[] = 'From: ' . $this->from;
@@ -94,7 +113,11 @@ class Mail
 		if ($this->bcc) {
 			$headers[] = 'Bcc: ' . join(',', $this->bcc);
 		}
+		return $headers;
+	}
 
-		return mail(join(',', $this->to), $this->subject, $this->body, join("\r\n", $headers));
+	protected function _subject()
+	{
+		return $this->subject;
 	}
 }
