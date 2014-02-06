@@ -1,96 +1,121 @@
 <?
-namespace Asenine;
-
-abstract class Node
+namespace Asenine
 {
-	protected static $noclose = array(
-		'img',
-		'input',
-		'meta'
-	);
-
-	public $print = true;
-
-	public $attributes = array();
-	public $children = array();
-	public $tag = 'node';
-
-
-	public function __toString()
+	class Node
 	{
-		if (!$this->print) {
-			return '';
+		protected static $noclose = array(
+			'img',
+			'input',
+			'meta'
+		);
+
+		public $print = true;
+
+		public $attributes = array();
+		public $children = array();
+		public $tag = 'node';
+
+
+		public function __toString()
+		{
+			if (!$this->print) {
+				return '';
+			}
+
+			$html = '<' . $this->tag . $this->getAttr() . '>';
+
+			if (!in_array($this->tag, self::$noclose)) {
+				$html .= $this->getChild() . '</' . $this->tag . '>';
+			}
+
+			return $html;
 		}
 
-		$html = '<' . $this->tag . $this->getAttr() . '>';
 
-		if (!in_array($this->tag, self::$noclose)) {
-			$html .= $this->getChild() . '</' . $this->tag . '>';
+		public function addAttr($key, $value)
+		{
+			$Attr = new Node\Attr($key, $value);
+			$this->attributes[(string)$key][] = $Attr;
+			return $Attr;
 		}
 
-		return $html;
-	}
-
-
-	public function addAttr($key, $value)
-	{
-		$this->attributes[(string)$key][] = $value;
-		return $this;
-	}
-
-	public function addChild()
-	{
-		foreach (func_get_args() as $child) {
-			$this->children[] = $child;
+		public function addChild()
+		{
+			foreach (func_get_args() as $child) {
+				$this->children[] = $child;
+			}
+			return $this;
 		}
-		return $this;
-	}
 
-	public function addClass()
-	{
-		foreach (func_get_args() as $class) {
-			$this->addAttr('class', $class);
+		public function addClass()
+		{
+			foreach (func_get_args() as $class) {
+				$this->addAttr('class', $class);
+			}
+			return $this;
 		}
-		return $this;
-	}
 
-	public function addData($prefix, $content)
-	{
-		if (is_array($content) || is_object($content)) {
-			$content = json_encode($content);
+		public function addData($prefix, $content)
+		{
+			return $this->addAttr('data-' . $prefix, $content);
 		}
-		return $this->addAttr('data-' . $prefix, $content);
-	}
 
-	public function addId()
-	{
-		foreach (func_get_args() as $id) {
-			$this->addAttr('id', $id);
+		public function addId()
+		{
+			foreach (func_get_args() as $id) {
+				$this->addAttr('id', $id);
+			}
+			return $this;
 		}
-		return $this;
-	}
 
-	public function addStyle($key, $value)
-	{
-		$this->addAttr('style', sprintf('%s: %s;', $key, $value));
-		return $this;
-	}
-
-	public function getAttr()
-	{
-		$html = '';
-		foreach ($this->attributes as $name => $values) {
-			$html .= ' ' . htmlspecialchars($name) . '="' . htmlspecialchars(join(' ', $values)) . '"';
+		public function addStyle($key, $value)
+		{
+			return $this->addAttr('style', sprintf('%s: %s;', $key, $value));
 		}
-		return $html;
-	}
 
-	public function getChild()
-	{
-		$html = '';
-		foreach ($this->children as $child) {
-			$html .= (string)$child;
+		public function getAttr()
+		{
+			$html = '';
+			foreach ($this->attributes as $name => $values) {
+				$html .= ' ' . htmlspecialchars($name) . '="' . htmlspecialchars(join(' ', $values)) . '"';
+			}
+			return $html;
 		}
-		return $html;
+
+		public function getChild()
+		{
+			$html = '';
+			foreach ($this->children as $child) {
+				$html .= (string)$child;
+			}
+			return $html;
+		}
+	}
+}
+
+namespace Asenine\Node
+{
+	class Attr
+	{
+		public $name;
+		public $value;
+
+		public function __construct($name, $value)
+		{
+			$this->name = $name;
+			$this->value = $value;
+		}
+
+		public function __toString()
+		{
+			if (is_array($this->value) || $this->value instanceof \stdClass) {
+				$value = json_encode($this->value);
+			}
+			else {
+				$value = (string)$this->value;
+			}
+
+			return (string)$value;
+		}
 	}
 }
