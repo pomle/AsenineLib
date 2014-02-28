@@ -17,6 +17,7 @@ class Connection
 
 	private $transactionLevel = 0;
 	protected $PDO;
+	public $echo = false;
 
 	/**
 	 * Initialises a new Connection object.
@@ -143,6 +144,10 @@ class Connection
 	 */
 	public function query($query)
 	{
+		if ($this->echo) {
+			echo preg_replace("%\s+%", " ", $query), "\n";
+		}
+
 		$Result = $this->getPDO()->query($query);
 
 		if (false === $Result) {
