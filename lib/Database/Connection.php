@@ -15,6 +15,7 @@ class Connection
 	const TYPE_NULL = 'NULL';
 	const TYPE_TIMESTAMP = "'Y-m-d H:i:s'";
 
+	private $transactionLevel = 0;
 	protected $PDO;
 
 	/**
@@ -34,7 +35,10 @@ class Connection
 	 */
 	public function begin()
 	{
-		$this->getPDO()->beginTransaction();
+		if ($this->transactionLevel == 0) {
+			$this->getPDO()->beginTransaction();
+		}
+		$this->transactionLevel++;
 		return $this;
 	}
 
@@ -46,8 +50,10 @@ class Connection
 	 */
 	public function commit()
 	{
-		$this->getPDO()->commit();
-
+		$this->transactionLevel--;
+		if ($this->transactionLevel == 0) {
+			$this->getPDO()->commit();
+		}
 		return $this;
 	}
 
@@ -156,7 +162,7 @@ class Connection
 	public function rollback()
 	{
 		$this->getPDO()->rollBack();
-
+		$this->transactionLevel = 0;
 		return $this;
 	}
 
