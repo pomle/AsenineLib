@@ -123,6 +123,9 @@ class Manager
 	{
 		$query = DB::prepareQuery("SELECT name, value FROM asenine_user_settings WHERE user_id = %u", $userID);
 		$settings = DB::queryAndFetchArray($query);
+		foreach ($settings as $key => &$value) {
+			$value = json_decode($value);
+		}
 		return $settings;
 	}
 
@@ -178,12 +181,10 @@ class Manager
 	{
 		self::resetSettings($userID);
 
-		if( count($settings) > 0 )
-		{
+		if (count($settings) > 0) {
 			$query = "INSERT INTO asenine_user_settings (user_id, name, value) VALUES";
-			foreach($settings as $key => $value)
-			{
-				$query .= DB::prepareQuery('(%u, %s, %s),', $userID, $key, $value);
+			foreach ($settings as $key => $value) {
+				$query .= DB::prepareQuery('(%u, %s, %s),', $userID, $key, json_encode($value));
 			}
 			DB::queryAndCountAffected(rtrim($query, ','));
 		}
