@@ -114,6 +114,9 @@ class Query
 
 				/* Unsigned integer. */
 				case 'u':
+					if ($param instanceof \DateTime) {
+						return $param->format('U');
+					}
 					return sprintf('%u', $param);
 				break;
 
