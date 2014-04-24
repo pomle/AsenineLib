@@ -1,4 +1,4 @@
-<?php
+<?
 /**
  * User class that handles login and policies
  *
@@ -26,16 +26,13 @@ class User
 	private
 		$isSettingsChanged = false;
 
-	protected
+	public
 		$csrfToken,
 		$isAdministrator,
 		$ip,
-		$IPsAllowed,
-		$IPsDenied,
 		$policies;
 
 	public
-		$userID,
 		$username,
 		$isEnabled,
 		$isLoggedIn,
@@ -55,7 +52,15 @@ class User
 	 */
 	public static function createSalt()
 	{
-		return \Asenine\Util\Token::createPassword(22, './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz');
+		$salt = '';
+
+		$chars = str_split('./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz');
+		$charCount = 22;
+
+		while($charCount--)
+			$salt .= $chars[array_rand($chars)];
+
+		return $salt;
 	}
 
 	/**
@@ -88,344 +93,6 @@ class User
 		return $hash;
 	}
 
-	/**
-	 * Creates the initial, minimal viable row for the User in database
-	 *
-	 * @param \Asenine\User $User
-	 *    User object to represent in DB
-	 * @throw \Asenine\DBException
-	 */
-	protected static function createInDB(self $User)
-	{
-		$timeCreated = time();
-
-		$query = DB::prepareQuery("INSERT INTO
-			asenine_users (
-				is_enabled,
-				time_created,
-				time_modified,
-				username
-			) VALUES(
-				false,
-				%u,
-				%u,
-				NULL)",
-			$timeCreated,
-			$timeCreated);
-
-		if( $userID = (int)DB::queryAndGetID($query, 'asenine_users_id_seq') )
-		{
-			$User->userID = (int)$userID;
-			$User->timeCreated = $timeCreated;
-			$User->timeModified = $timeCreated;
-		}
-	}
-
-	/**
-	 * Loads one or more users from the database. Does not log them in.
-	 *
-	 * @param int|array $userIDs
-	 *    User ID or array of user IDs
-	 * @return mixed
-	 *    Returns instance(s) of \Asenine\User
-	 */
-	public static function loadFromDB($userIDs)
-	{
-		if( !$returnArray = is_array($userIDs) )
-			$userIDs = (array)$userIDs;
-
-		/* Pre-loads an array with false values to remain sorting order from input array */
-		$users = array_fill_keys($userIDs, false);
-
-		$query = DB::prepareQuery("SELECT
-				u.id AS user_id,
-				u.is_enabled,
-				u.is_administrator,
-				u.time_auto_logout,
-				u.time_created,
-				u.time_modified,
-				u.time_last_login,
-				u.time_password_last_change,
-				u.count_logins_successful,
-				u.count_logins_failed,
-				u.count_logins_failed_streak,
-				u.username,
-				u.fullname,
-				u.phone,
-				u.email
-			FROM
-				asenine_users u
-			WHERE
-				u.ID IN %a", $userIDs);
-
-		$result = DB::fetch($query);
-
-		while ($user = DB::assoc($result)) {
-			$userID = (int)$user['user_id'];
-
-			$User = new static($userID);
-
-			$User->isEnabled = (bool)$user['is_enabled'];
-			$User->isAdministrator = (bool)$user['is_administrator'];
-			$User->username = $user['username'];
-			$User->timeAutoLogout = (int)$user['time_auto_logout'] ?: null;
-			$User->timeCreated = (int)$user['time_created'] ?: null;
-			$User->timeModified = (int)$user['time_modified'] ?: null;
-			$User->timeLastLogin = (int)$user['time_last_login'] ?: null;
-			$User->timePasswordLastChange = (int)$user['time_password_last_change'] ?: null;
-
-			$User->countLoginsSuccessful = (int)$user['count_logins_successful'];
-			$User->countLoginsFailed = (int)$user['count_logins_failed'];
-			$User->countLoginsFailedStreak = (int)$user['count_logins_failed_streak'];
-
-			$User->fullname = $user['fullname'];
-			$User->name = $User->fullname ?: $User->username;
-			$User->email = $user['email'];
-			$User->phone = $user['phone'];
-
-			$users[$userID] = $User;
-		}
-
-		/* Removes any illegal ID pointer placeholders */
-		$users = array_filter($users);
-		$userIDs = array_keys($users);
-
-		if (count($userIDs)) {
-			$query = DB::prepareQuery("SELECT user_id, name, value FROM asenine_user_settings WHERE user_id IN %a", $userIDs);
-			$result = DB::fetch($query);
-
-			while ($row = DB::assoc($result)) {
-				$users[(int)$row['user_id']]->settings[$row['name']] = $row['value'];
-			}
-		}
-
-		return $returnArray ? $users : reset($users);
-	}
-
-	/**
-	 * Fetches a user from database by username
-	 *
-	 * @param string $username
-	 *    Username of user
-	 * @return static
-	 *    Instance of class
-	 */
-	public static function loadByUsername($username)
-	{
-		return static::loadFromDB(User\Dataset::getUserID($username));
-	}
-
-	/**
-	 * Logs a user in.
-	 *
-	 * @param string $username
-	 * @param string $password
-	 * @param string $otp
-	 * @throws \Asenine\UserException
-	 * @return \Asenine\User
-	 */
-	public static function login($username, $password, $otp)
-	{
-		try
-		{
-			if (!strlen($username) || !strlen($password) || !strlen($otp)) {
-				throw new UserException('Insufficient credentials supplied, missing username, password or auth code.');
-			}
-
-			$query = DB::prepareQuery("SELECT
-					id AS user_id,
-					otp_secret
-				FROM
-					asenine_users
-				WHERE
-					is_enabled = true
-					AND username = %s LIMIT 1",
-				$username);
-
-			if (!$user = DB::queryAndFetchOne($query)) {
-				throw new UserException('Username invalid or user login not enabled.');
-			}
-
-			list($userID) = array_values($user);
-
-			try
-			{
-				if (self::verifyPassword($userID, $password) !== true) {
-					throw new UserException('Password mismatch.');
-				}
-
-				if (self::verifyAuthCode($userID, $otp) !== true) {
-					throw new UserException('Auth code mismatch.');
-				}
-			}
-			catch(UserException $e)
-			{
-				/* If login fails, remove token and increment streaks.
-					Also disables user if fail streak is too high. */
-				$query = DB::prepareQuery("UPDATE
-						asenine_users
-					SET
-						count_logins_failed = count_logins_failed + %d,
-						count_logins_failed_streak = count_logins_failed_streak + %d,
-						is_enabled = (count_logins_failed_streak < %u),
-						password_authtoken = NULL,
-						time_authtoken_created = NULL
-					WHERE
-						id = %u",
-					1,
-					1,
-					self::FAIL_LOCK,
-					$userID);
-
-				DB::queryAndCountAffected($query);
-
-				throw $e;
-			}
-
-
-			/* All tests passed, proceed with setting up logged in user object */
-			if(!$User = self::loadFromDB($userID))
-				throw new UserException('User could not be loaded from database.');
-
-			$User->isLoggedIn = true;
-
-			$User->enforceSecurity();
-			$User->wakeUp();
-
-			$User->settings = User\Manager::getSettings($User->userID);
-			$User->preferences = User\Manager::getPreferences($User->userID);
-
-
-			/* Create a token for autologin and deploy in cookie together with username */
-			$newToken = hash_hmac('ripemd160', $User->username . microtime() . uniqid(true), 'c9q7rc98qcur9q8wytkcq09tucw89y');
-			setcookie('username', $User->username, time() + 60*60*24*30, '/');
-			setcookie('authtoken',	$newToken, time() + self::TOKEN_COOKIE_LIFE, '/');
-
-
-			/* Update database to reflect latest login result */
-			$now = time();
-
-			$query = DB::prepareQuery("UPDATE
-					asenine_users
-				SET
-					count_logins_successful = count_logins_successful + 1,
-					count_logins_failed_streak = 0,
-					time_last_login = %d,
-					time_authtoken_created = %d,
-					password_authtoken = %s
-				WHERE
-					id = %u",
-				$now,
-				$now,
-				$newToken,
-				$User->getID());
-
-			DB::queryAndCountAffected($query);
-
-			return $User;
-		}
-		catch(UserException $e)
-		{
-			throw $e;
-		}
-	}
-
-	/* Removes a user from database */
-	public static function removeFromDB(self $User)
-	{
-		$query = DB::prepareQuery("DELETE FROM asenine_users WHERE ID = %d", $User->userID);
-		return DB::query($query);
-	}
-
-
-	/* Save/Updates a User in database */
-	public static function saveToDB(self $User)
-	{
-		$timeModified = time();
-
-		if(!isset($User->userID)) self::createInDB($User);
-
-		$query = DB::prepareQuery("UPDATE
-				asenine_users
-			SET
-				is_enabled = %b,
-				is_administrator = %b,
-				time_modified = %u,
-				time_auto_logout = NULLIF(%u, 0),
-				username = NULLIF(%s, ''),
-				fullname = NULLIF(%s, ''),
-				email = NULLIF(%s, ''),
-				phone = NULLIF(%s, '')
-			WHERE
-				id = %u",
-			$User->isEnabled,
-			$User->isAdministrator(),
-			$timeModified,
-			$User->timeAutoLogout,
-			$User->username,
-			$User->fullname,
-			$User->email,
-			$User->phone,
-			$User->userID);
-
-		DB::queryAndCountAffected($query);
-
-		$User->timeModified = $timeModified;
-
-		return true;
-	}
-
-	public static function verifyAuthCode($userID, $otp)
-	{
-		$query = DB::prepareQuery("SELECT
-				otp_secret
-			FROM
-				asenine_users
-			WHERE
-				id = %d",
-			$userID);
-
-		if(!$secret = DB::queryAndFetchOne($query))
-			throw new UserException('User does not exist.');
-
-		if (strlen($secret) < 20) {
-			throw new UserException('Auth secret invalid.');
-		}
-
-		/* Populate array of timestamps to check against to protect against accidental overlap. */
-		$timestamp = time();
-		$timestamps = array($timestamp, $timestamp - 30, $timestamp + 30);
-
-		$totp = new \OTPHP\TOTP($secret);
-		foreach ($timestamps as $t) {
-			if (true === $totp->verify($otp, $t)) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	public static function verifyPassword($userID, $password)
-	{
-		$query = DB::prepareQuery("SELECT
-				password_hash,
-				password_salt
-			FROM
-				asenine_users
-			WHERE
-				id = %d",
-			$userID);
-
-		if(!$result = DB::queryAndFetchOne($query))
-			throw new UserException('User does not exist.');
-
-		$storedHash = $result['password_hash'];
-		$calculatedHash = self::createHash($password, $result['password_salt']);
-
-		return ($storedHash === $calculatedHash);
-	}
-
 
 	public function __construct($userID = null)
 	{
@@ -443,30 +110,6 @@ class User
 		$this->preferences = array();
 	}
 
-	public function __destruct()
-	{
-		if (!is_null($this->userID) && $this->isLoggedIn()) {
-			User\Manager::setPreferences($this->userID, $this->preferences);
-			if ($this->isSettingsChanged) {
-				User\Manager::setSettings($this->userID, $this->settings);
-				$this->isSettingsChanged = false;
-			}
-		}
-	}
-
-	public function __get($key)
-	{
-		return $this->$key;
-	}
-
-	final public function __wakeup()
-	{
-		if ($this->isLoggedIn()) {
-			$this->enforceSecurity();
-			$this->wakeUp();
-		}
-	}
-
 
 	public function addPolicy($policy)
 	{
@@ -477,8 +120,6 @@ class User
 	/* Updates security state anset takes action to log the user out if any of them match */
 	final public function enforceSecurity()
 	{
-		$this->updateSecurity();
-
 		$kick = false;
 
 		$clientIP = getenv('REMOTE_ADDR');
@@ -626,11 +267,6 @@ class User
 		return true;
 	}
 
-	/* Sets a new password for the current user */
-	public function setPassword($password)
-	{
-		return User\Manager::setPassword($this->userID, $password);
-	}
 
 	/* Pushes a setting to the User's settings storage */
 	public function setSetting($key, $value = null)
@@ -646,30 +282,5 @@ class User
 		$this->isSettingsChanged = true;
 
 		return true;
-	}
-
-	/* Refreshes security state from database */
-	protected function updateSecurity()
-	{
-		$properties = User\Dataset::getProperties($this->userID);
-
-		$this->isEnabled = (bool)$properties['is_enabled'];
-		$this->isAdministrator = (bool)$properties['is_administrator'];
-
-		$this->username = $properties['username'];
-
-		$this->timeLastActivity = time();
-		$this->timeKickOut = is_numeric($properties['time_auto_logout']) ? $this->timeLastActivity + $properties['time_auto_logout'] : null;
-
-		$this->policies = User\Manager::getPolicies($this->userID);
-
-		$ipPools = User\Manager::getIPPools($this->userID);
-
-		$this->IPsAllowed = $ipPools['allow'];
-		$this->IPsDenied = $ipPools['deny'];
-	}
-
-	protected function wakeUp()
-	{
 	}
 }
