@@ -5,9 +5,10 @@ class Thumb extends \Asenine\Media\Preset
 {
 	const NAME = 'thumb';
 
-	public function __construct($mediaHash, $x, $y, $crop = false, $quality = 90)
+	public function __construct(\Asenine\Media\Type\_Visual $Media, $x, $y, $crop = false, $quality = 90)
 	{
-		$this->mediaHash = $mediaHash;
+		$this->Media;
+		$this->mediaHash = $Media->File->hash;
 		$this->x = abs($x);
 		$this->y = abs($y);
 		$this->crop = (bool)$crop;
@@ -18,14 +19,7 @@ class Thumb extends \Asenine\Media\Preset
 
 	public function createFile($filepath)
 	{
-		if( !$Media = \Asenine\Media::loadByHash($this->mediaHash) )
-			throw new \Asenine\MediaException(sprintf("mediaHash %s not found", $this->mediaHash));
-
-		if( !$Media instanceof \Asenine\Media\Type\_Visual )
-			throw new \Asenine\MediaException(get_class($Media) . ' not instance of \\Asenine\\Media\\Type\\_Visual');
-
-		$Factory = new \Asenine\Media\Generator\ImageResize($Media, $this->x, $this->y, $this->crop, $this->quality);
-
+		$Factory = new \Asenine\Media\Generator\ImageResize($this->Media, $this->x, $this->y, $this->crop, $this->quality);
 		return $Factory->saveToFile($filepath);
 	}
 }

@@ -1,51 +1,39 @@
 <?
 /**
- * User class that handles login and policies
+ * User class.
  *
  * @author Pontus Persson <pom@spotify.com>
  */
 namespace Asenine;
 
-class UserException extends \Exception
-{}
-
-
 class User
 {
-	const TOKEN_COOKIE_LIFE = 172800; // 60*60*24*20
-	const TOKEN_LIFE = 172800; // 60*60*24*20
-
 	const USERNAME_MIN_LEN = 1;
 	const USERNAME_MAX_LEN = 32;
 
 	const PASSWORD_MIN_LEN = 6;
 	const PASSWORD_MAX_AGE = null;
 
-	const FAIL_LOCK = 10;
+	private $isSettingsChanged = false;
 
-	private
-		$isSettingsChanged = false;
+	protected $csrfToken;
+	protected $ip;
+	protected $policies = array();
+	public $settings = array();
 
-	public
-		$csrfToken,
-		$isAdministrator,
-		$ip,
-		$policies;
+	public $userID;
+	public $username;
+	public $isAdministrator;
+	public $isEnabled;
+	public $isLoggedIn;
+	public $timeAutoLogout;
+	public $timeKickOut;
+	public $timeLastActivity;
+	public $fullname;
+	public $email;
+	public $phone;
+	public $preferences;
 
-	public
-		$username,
-		$isEnabled,
-		$isLoggedIn,
-		$timeAutoLogout,
-		$timeKickOut,
-		$timeLastActivity;
-
-	public
-		$fullname,
-		$email,
-		$phone,
-		$preferences,
-		$settings;
 
 	/**
 	 * Creates a Blowfish-compatible, random string for use as the user's unique salt
@@ -57,8 +45,9 @@ class User
 		$chars = str_split('./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz');
 		$charCount = 22;
 
-		while($charCount--)
+		while ($charCount--) {
 			$salt .= $chars[array_rand($chars)];
+		}
 
 		return $salt;
 	}
@@ -76,18 +65,18 @@ class User
 	public static function createHash($string, $salt)
 	{
 		if (!defined('CRYPT_BLOWFISH') || (CRYPT_BLOWFISH !== 1)) {
-			throw new \Exception("bcrypt not supported in this installation. See http://php.net/crypt");
+			throw new \RuntimeException("bcrypt not supported in this installation. See http://php.net/crypt");
 		}
 
 		if (($saltLen = strlen($salt)) < 22) {
-			throw new \Exception("Illegal salt.");
+			throw new \InvalidArgumentException("Illegal salt.");
 		}
 
 		/* TODO: Set typ $2y and upgrade to PHP 5.3.7 */
 		$hash = crypt($string, '$2a$10$' . $salt);
 
 		if (strlen($hash) < $saltLen) {
-			throw new \Exception("Hashing failed.");
+			throw new \RuntimeException("Hashing failed.");
 		}
 
 		return $hash;
@@ -99,21 +88,19 @@ class User
 		$this->csrfToken = hash('sha256', 'eaks up a message into blocks of a fixed size and iterates over t' . uniqid('asenine-csrf', true));
 		$this->ip = $this->getCurrentIP();
 
-		$this->userID = (int)$userID ?: null;
 		$this->isAdministrator = false;
 		$this->isLoggedIn = false;
+	}
 
-		$this->IPsAllowed = new IPPool();
-		$this->IPsDenied = new IPPool();
+	public function __destruct()
+	{
 
-		$this->settings = array();
-		$this->preferences = array();
 	}
 
 
 	public function addPolicy($policy)
 	{
-		$this->policies[$policy] = 0;
+		$this->policies[$policy] = 1;
 		return $this;
 	}
 
@@ -124,26 +111,19 @@ class User
 
 		$clientIP = getenv('REMOTE_ADDR');
 
-		### If IPs in Allow-pool, make sure we're in it
-		if( count($this->IPsAllowed->ranges) )
-			$kick = !$this->IPsAllowed->hasIP($clientIP);
-
-		### If IPs in Deny-pool, override allow and kick no matter what
-		if( count($this->IPsDenied->ranges) )
-			$kick = $this->IPsDenied->hasIP($clientIP);
-
-
-		### If user has been idle for too long, kick him
-		if( $this->timeKickOut && time() >= $this->timeKickOut )
+		/* If user has been idle for too long, kick him. */
+		if ($this->timeKickOut && time() >= $this->timeKickOut) {
 			$kick = true;
+		}
 
-		### If user has been disabled in database, kick
-		if( $this->isEnabled !== true )
+		/* If user has been disabled in database, kick. */
+		if (true !== $this->isEnabled) {
 			$kick = true;
+		}
 
-
-		if( $kick )
+		if ($kick) {
 			$this->isLoggedIn = false;
+		}
 	}
 
 	public function dropPolicy($policy)
@@ -179,7 +159,9 @@ class User
 		if (isset($this->settings[$key])) {
 			return $this->settings[$key];
 		}
-		return null;
+		else {
+			return null;
+		}
 	}
 
 	public function getStoredIP()
@@ -224,7 +206,7 @@ class User
 	 * Sets or returns the administrator status.
 	 * If param is omitted, the current state is returned as boolean.
 	 *
-	 * @param bool $changeTo	TRUE will set the status to true, other values will set to false.
+	 * @param bool $changeTo TRUE will set the status to true, other values will set to false.
 	 * @return bool
 	 * @return self
 	 */
@@ -241,43 +223,36 @@ class User
 
 	public function isLoggedIn()
 	{
-		return $this->isLoggedIn;
+		return (true === $this->isLoggedIn);
 	}
 
-	/* Explicitly logs the user out and destroys authorization token */
-	public function logout()
+	public function setPolicies(array $policies)
 	{
-		if( $this->isLoggedIn !== true ) return false;
-
-		$query = DB::prepareQuery("UPDATE
-				asenine_users
-			SET
-				password_authtoken = NULL,
-				time_authtoken_created = NULL
-			WHERE
-				ID = %u",
-			$this->userID);
-
-		DB::queryAndCountAffected($query);
-
-		$this->isLoggedIn = false;
-
-		setcookie('authtoken', '', 0, '/');
-
-		return true;
+		$this->policies = array();
+		foreach ($policies as $policy) {
+			$this->addPolicy($policy);
+		}
 	}
 
-
-	/* Pushes a setting to the User's settings storage */
+	/**
+	 * Sets or updates a user's setting.
+	 *
+	 * @param string $changeTo TRUE will set the status to true, other values will set to false.
+	 * @return bool
+	 * @return self
+	 */
 	public function setSetting($key, $value = null)
 	{
-		$key = (string)$key;
+		if (!is_string($key)) {
+			throw new \InvalidArgumentException('Key argument must be string.');
+		}
 
-		if( is_null($value) && isset($this->settings[$key]) )
+		if (is_null($value) && isset($this->settings[$key])) {
 			unset($this->settings[$key]);
-
-		else
+		}
+		else {
 			$this->settings[$key] = $value;
+		}
 
 		$this->isSettingsChanged = true;
 

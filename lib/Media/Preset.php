@@ -17,36 +17,37 @@ abstract class Preset implements iPreset
 	{
 		$fileExists = $this->isGenerated();
 
-		if( !$fileExists )
-		{
+		if (!$fileExists) {
 			$sleepTime = 100000; // 100 ms
 
-
 			$dirPath = ASENINE_DIR_MEDIA_PUBLIC . $this->getPath();
-			if( !file_exists($dirPath) && !is_dir($dirPath) && !@mkdir($dirPath, 0755, true) ) throw New \Exception("Path not reachable \"$dirPath\"");
+			if (!file_exists($dirPath) && !is_dir($dirPath) && !@mkdir($dirPath, 0755, true)) {
+				throw new \RuntimeException("Path not reachable \"$dirPath\"");
+			}
 
 			$filePath = $this->getFullFilePath();
 
 
-			if( !$resource = @fopen($filePath, "c") )
-				throw New \Exception("Could not create handle for \"$filePath\"");
+			if (!$resource = @fopen($filePath, "c")) {
+				throw new \RuntimeException("Could not create handle for \"$filePath\"");
+			}
 
-			while( true )
-			{
+			for(;;) {
+
 				$haveLock = flock($resource, LOCK_EX | LOCK_NB, $wouldblock);
 
-				if( $haveLock )
-				{
+				if ($haveLock) {
 					clearstatcache($filePath);
 
 					$fileSize = filesize($filePath);
 
-					if( $fileSize == 0 ) ### A 0 byte fileSize means that we are the creator
-					{
+					/* A 0 byte fileSize means that we are the creator */
+					if ($fileSize == 0) {
 						ftruncate($resource, 0);
 
-						if( !$this->createFile($filePath) )
+						if (!$this->createFile($filePath)) {
 							trigger_error(get_class($this) . "::createFile() returned false for $filePath", E_USER_WARNING);
+						}
 					}
 
 					flock($resource, LOCK_UN);
@@ -56,10 +57,12 @@ abstract class Preset implements iPreset
 					break;
 				}
 
-				if( $wait )
+				if ($wait) {
 					usleep($sleepTime);
-				else
+				}
+				else {
 					break;
+				}
 			}
 
 			fclose($resource);
@@ -95,22 +98,21 @@ abstract class Preset implements iPreset
 
 	final public function getURL($wait = true)
 	{
-		try
-		{
-			if( !$this->getFile($wait) ) return false;
+		try {
+			if (!$this->getFile($wait)) {
+				return false;
+			}
 
 			return ASENINE_URL_MEDIA . $this->getFilePath();
 		}
-		catch(\Exception $e)
-		{
+		catch (\Exception $e) {
 			throw new \Exception(get_called_class() . ' media generation failed, Reason: ' . $e->getMessage(), E_USER_WARNING);
-			return false;
 		}
 	}
 
 	final public function isGenerated()
 	{
 		$diskFile = $this->getFullFilePath();
-		return ( file_exists($diskFile) && filesize($diskFile) > 0 );
+		return (file_exists($diskFile) && filesize($diskFile) > 0);
 	}
 }
