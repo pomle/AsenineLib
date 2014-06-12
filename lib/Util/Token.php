@@ -3,24 +3,19 @@ namespace Asenine\Util;
 
 class Token
 {
+	public static function createOTPSecret($length = 12, $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567')
+	{
+		return Random::urandomString($length, $chars);
+	}
+
 	public static function createPassword($length = 12, $chars = 'abcdefghijkmnopqrstuvwxyz023456789!"#%/()$')
 	{
-		if (!is_int($length) || $length < 0) {
-			throw new \Exception('Argument #1 of ' . __METHOD__ . ' must be positive integer.');
-		}
+		return Random::urandomString($length, $chars);
+	}
 
-		if (!is_string($chars)) {
-			throw new \Exception('Argument #2 of ' . __METHOD__ . ' must be string.');
-		}
-
-		$chars = str_split($chars);
-		$password = '';
-
-		while ($length--) {
-			$password .= $chars[array_rand($chars)];
-		}
-
-		return $password;
+	public static function createToken($length = 256, $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789')
+	{
+		return Random::urandomString($length, $chars);
 	}
 
 	public static function safeCompare($token1, $token2)

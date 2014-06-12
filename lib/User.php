@@ -55,15 +55,7 @@ class User
 	 */
 	public static function createSalt()
 	{
-		$salt = '';
-
-		$chars = str_split('./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz');
-		$charCount = 22;
-
-		while($charCount--)
-			$salt .= $chars[array_rand($chars)];
-
-		return $salt;
+		return \Asenine\Util\Token::createPassword(22, './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz');
 	}
 
 	/**
@@ -224,26 +216,25 @@ class User
 	}
 
 	/**
-	 * Logs a user in with either password or token
+	 * Logs a user in.
 	 *
 	 * @param string $username
 	 * @param string $password
-	 * @param string $trialToken
+	 * @param string $otp
 	 * @throws \Asenine\UserException
 	 * @return \Asenine\User
 	 */
-	public static function login($username, $password = null, $trialToken = null)
+	public static function login($username, $password, $otp)
 	{
 		try
 		{
-			if (!strlen($username) || !strlen($password) && !strlen($trialToken)) {
-				throw new UserException('Insufficient credentials supplied, missing username, password or token.');
+			if (!strlen($username) || !strlen($password) || !strlen($otp)) {
+				throw new UserException('Insufficient credentials supplied, missing username, password or auth code.');
 			}
 
 			$query = DB::prepareQuery("SELECT
 					id AS user_id,
-					password_authtoken,
-					time_authtoken_created
+					otp_secret
 				FROM
 					asenine_users
 				WHERE
@@ -255,29 +246,16 @@ class User
 				throw new UserException('Username invalid or user login not enabled.');
 			}
 
-			list($userID, $storedToken, $timeToken) = array_values($user);
+			list($userID) = array_values($user);
 
 			try
 			{
-				if($isPasswordLogin = (isset($password) && strlen($password)))
-				{
-					if(self::verifyPassword($userID, $password) !== true)
-						throw new UserException('Password mismatch.');
+				if (self::verifyPassword($userID, $password) !== true) {
+					throw new UserException('Password mismatch.');
 				}
-				elseif(isset($trialToken) && strlen($trialToken))
-				{
-					if(strlen($storedToken) < 32)
-						throw new UserException('Saved token invalid.');
 
-					if(($timeToken + self::TOKEN_LIFE) < time())
-						throw new UserException('Token has expired.');
-
-					if(!Util\Token::safeCompare($storedToken, $trialToken))
-						throw new UserException('Token in DB mismatches token in Cookie.');
-				}
-				else
-				{
-					throw new UserException('No valid means of authentication supplied.');
+				if (self::verifyAuthCode($userID, $otp) !== true) {
+					throw new UserException('Auth code mismatch.');
 				}
 			}
 			catch(UserException $e)
@@ -294,8 +272,8 @@ class User
 						time_authtoken_created = NULL
 					WHERE
 						id = %u",
-					$isPasswordLogin ? 1 : 0,
-					$isPasswordLogin ? 1 : 0,
+					1,
+					1,
 					self::FAIL_LOCK,
 					$userID);
 
@@ -395,6 +373,37 @@ class User
 		$User->timeModified = $timeModified;
 
 		return true;
+	}
+
+	public static function verifyAuthCode($userID, $otp)
+	{
+		$query = DB::prepareQuery("SELECT
+				otp_secret
+			FROM
+				asenine_users
+			WHERE
+				id = %d",
+			$userID);
+
+		if(!$secret = DB::queryAndFetchOne($query))
+			throw new UserException('User does not exist.');
+
+		if (strlen($secret) < 20) {
+			throw new UserException('Auth secret invalid.');
+		}
+
+		/* Populate array of timestamps to check against to protect against accidental overlap. */
+		$timestamp = time();
+		$timestamps = array($timestamp, $timestamp - 30, $timestamp + 30);
+
+		$totp = new \OTPHP\TOTP($secret);
+		foreach ($timestamps as $t) {
+			if (true === $totp->verify($otp, $t)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	public static function verifyPassword($userID, $password)

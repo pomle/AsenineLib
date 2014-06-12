@@ -147,7 +147,6 @@ class Manager
 
 		$passwordSalt = \Asenine\User::createSalt();
 		$passwordHash = \Asenine\User::createHash($password, $passwordSalt);
-
 		$query = DB::prepareQuery("UPDATE
 				asenine_users
 			SET
