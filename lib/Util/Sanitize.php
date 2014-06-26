@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Class containing methods for sanitizing strings and throwing exceptions.
  */

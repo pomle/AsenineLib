@@ -1,4 +1,4 @@
-<?
+<?php
 namespace Asenine\Geometry;
 
 class Cuboid

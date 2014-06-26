@@ -1,4 +1,4 @@
-<?php
+<?phpphp
 /**
  * Tests for Asenine User.php
  *

@@ -1,4 +1,4 @@
-<?
+<?php
 namespace Asenine\PDFPage\Common;
 
 interface PDF

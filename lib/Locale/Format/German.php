@@ -1,4 +1,4 @@
-<?
+<?php
 namespace Asenine\Locale\Format;
 
 class German extends Common\Root

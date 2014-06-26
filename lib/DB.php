@@ -1,4 +1,4 @@
-<?
+<?php
 namespace Asenine;
 
 class DBException extends \Exception

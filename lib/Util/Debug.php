@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Debug class containing various functions for simplifying debug output and logging.
  *

@@ -1,4 +1,4 @@
-<?
+<?php
 namespace Asenine\Manager\Dataset;
 
 class UserPolicy

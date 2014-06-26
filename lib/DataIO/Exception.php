@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Custom Exception for DataIO subclasses.
  *

@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Wrapper for Select statements providing pagination.
  *

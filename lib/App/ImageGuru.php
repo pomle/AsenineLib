@@ -1,4 +1,4 @@
-<?
+<?php
 namespace Asenine\App;
 
 if( !defined('EXECUTABLE_IDENTIFY') )

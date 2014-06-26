@@ -1,4 +1,4 @@
-<?
+<?php
 namespace Asenine\Media\Preset;
 
 class Copy extends \Asenine\Media\Preset

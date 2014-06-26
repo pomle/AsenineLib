@@ -1,4 +1,4 @@
-<?
+<?php
 namespace Asenine\Media\Preset;
 
 class VideoStrip extends \Asenine\Media\Preset

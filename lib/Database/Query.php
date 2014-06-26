@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Represents an SQL Query and a base class for all query classes.
  *

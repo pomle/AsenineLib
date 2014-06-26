@@ -1,4 +1,4 @@
-<?
+<?php
 namespace Asenine\Util;
 
 class Random

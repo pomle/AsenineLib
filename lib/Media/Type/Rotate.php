@@ -1,4 +1,4 @@
-<?
+<?php
 namespace Asenine\Media\Type;
 
 class Rotate extends _Visual

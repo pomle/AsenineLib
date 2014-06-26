@@ -1,4 +1,4 @@
-<?
+<?php
 namespace Asenine\Media\Preset;
 
 class Rotatable extends \Asenine\Media\Preset

@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Represents an SQL Delete Statement.
  *

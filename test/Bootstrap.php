@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Bootstrapper for the Asenine Test Suite.
  *

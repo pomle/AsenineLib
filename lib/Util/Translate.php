@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Class containing utility functions for translations.
  *

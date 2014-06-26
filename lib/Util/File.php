@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Class containing function for interacting with file system.
  *

@@ -1,4 +1,4 @@
-<?
+<?php
 namespace Asenine\Media\Preset;
 
 class StreamingVideo extends \Asenine\Media\Preset

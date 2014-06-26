@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * File object used to simplify operations on Files in the file system.
  *

@@ -1,4 +1,4 @@
-<?
+<?php
 namespace Asenine\Media\Generator;
 
 class VideoStrip extends \Asenine\Media\Generator

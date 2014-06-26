@@ -1,4 +1,4 @@
-<?
+<?php
 namespace Asenine\Media\Type;
 
 class Video extends _Visual

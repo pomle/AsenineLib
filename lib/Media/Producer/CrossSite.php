@@ -1,4 +1,4 @@
-<?
+<?php
 namespace Asenine\Media\Producer;
 
 class CrossSite extends Producer

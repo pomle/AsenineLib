@@ -1,4 +1,4 @@
-<?
+<?php
 require __DIR__ . '/../lib/Util/CSS.php';
 
 try {

@@ -1,4 +1,4 @@
-<?
+<?php
 namespace Asenine\Validation;
 /**
  * To validate an email address according to RFCs 5321, 5322 and others

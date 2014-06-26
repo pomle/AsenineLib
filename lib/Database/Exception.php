@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * A custom Exception for use with Asenine\Database
  *

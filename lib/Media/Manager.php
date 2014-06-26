@@ -1,4 +1,4 @@
-<?
+<?php
 namespace Asenine\Media;
 
 class Manager

@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Class containing methods operating with JSON.
  */

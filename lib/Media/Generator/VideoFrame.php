@@ -1,4 +1,4 @@
-<?
+<?php
 namespace Asenine\Media\Generator;
 
 class VideoFrame extends \Asenine\Media\Generator

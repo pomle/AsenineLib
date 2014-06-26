@@ -1,4 +1,4 @@
-<?
+<?php
 namespace Asenine\Media\Generator;
 
 class x264 extends \Asenine\Media\Generator

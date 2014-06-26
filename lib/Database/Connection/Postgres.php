@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Represents a Connection to a Postgres database.
  *

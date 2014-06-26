@@ -1,4 +1,4 @@
-<?
+<?php
 namespace Asenine\Locale\Format;
 
 class Norwegian extends Common\Root

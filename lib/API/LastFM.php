@@ -1,4 +1,4 @@
-<?
+<?php
 namespace Asenine\API;
 
 class LastFMException extends \Exception

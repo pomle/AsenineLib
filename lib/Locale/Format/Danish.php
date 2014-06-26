@@ -1,4 +1,4 @@
-<?
+<?php
 namespace Asenine\Locale\Format;
 
 class Danish extends Common\Root

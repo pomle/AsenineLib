@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Helps with creating dir hierarchy, writing files to and resolving file names
  * in a file name splitted archives.

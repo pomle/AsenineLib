@@ -1,4 +1,4 @@
-<?
+<?php
 namespace Asenine\Interfaces;
 
 abstract class Iterator implements \Iterator

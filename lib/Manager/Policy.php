@@ -1,4 +1,4 @@
-<?
+<?php
 namespace Asenine\Manager;
 
 class Policy extends Common\DB

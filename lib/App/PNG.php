@@ -1,4 +1,4 @@
-<?
+<?php
 namespace Asenine\App;
 
 class PNG extends Common\Root

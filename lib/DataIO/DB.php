@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Base class for DB object fetcher that all DB IO classes should extend.
  *

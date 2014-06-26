@@ -1,4 +1,4 @@
-<?
+<?php
 namespace Asenine\Media\Generator;
 
 class ImageResize extends \Asenine\Media\Generator

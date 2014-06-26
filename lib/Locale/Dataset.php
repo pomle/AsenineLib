@@ -1,4 +1,4 @@
-<?
+<?php
 namespace Asenine\Locale;
 
 use \Asenine\DB as DB;

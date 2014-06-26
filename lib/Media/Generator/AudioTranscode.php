@@ -1,4 +1,4 @@
-<?
+<?php
 namespace Asenine\Media\Generator;
 
 class AudioTranscode extends \Asenine\Media\Generator

@@ -1,4 +1,4 @@
-<?
+<?php
 namespace Asenine\Media;
 
 use \Asenine\DB as DB;

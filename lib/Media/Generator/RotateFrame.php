@@ -1,4 +1,4 @@
-<?
+<?php
 namespace Asenine\Media\Generator;
 
 class RotateFrame extends \Asenine\Media\Generator

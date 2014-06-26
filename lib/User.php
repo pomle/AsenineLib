@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * User class that handles login and policies
  *

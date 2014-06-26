@@ -1,4 +1,4 @@
-<?
+<?php
 namespace Asenine\App\Common;
 
 if( !defined('FILE_CREATE_PERMS') ) define('FILE_CREATE_PERMS', 0755);

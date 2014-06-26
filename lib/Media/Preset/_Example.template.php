@@ -1,4 +1,4 @@
-<?
+<?php
 die('Skeleton File');
 
 namespace Asenine\Media\Preset;
