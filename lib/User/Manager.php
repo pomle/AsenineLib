@@ -5,10 +5,24 @@ use \Asenine\DB;
 
 class Manager
 {
+	const PASSWORD_RESET_TOKEN_LEN = 256;
+	const OTP_SECRET_LEN = 32;
+
 	public static function addPolicy($userID, $policyID)
 	{
 		$query = DB::prepareQuery("REPLACE INTO asenine_user_policies (user_id, policy_id) VALUES(%u, %u)", $userID, $policyID);
 		return DB::queryAndCountAffected($query);
+	}
+
+	public static function createPasswordResetToken($userID, $expirationTime)
+	{
+		$passwordResetToken = \Asenine\Util\Token::createToken(self::PASSWORD_RESET_TOKEN_LEN);
+
+		$query = DB::prepareQuery("INSERT INTO scatman_user_password_reset_tokens (user_id, time_created, time_expires, token)
+			VALUES(%d, %d, %d, %s)", $userID, time(), $expirationTime, $passwordResetToken);
+		DB::queryAndCountAffected($query);
+
+		return $passwordResetToken;
 	}
 
 	public static function dropPolicy($userID, $policyID)
@@ -127,6 +141,14 @@ class Manager
 			$value = json_decode($value);
 		}
 		return $settings;
+	}
+
+	public static function resetCredentials($userID)
+	{
+		$query = DB::prepareQuery("UPDATE asenine_users
+			SET password_hash = NULL, otp_secret = NULL
+			WHERE id = %d", $userID);
+		return DB::queryAndCountAffected($query);
 	}
 
 	public static function resetPreferences($userID)
