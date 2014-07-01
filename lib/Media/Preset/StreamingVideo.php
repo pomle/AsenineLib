@@ -17,12 +17,7 @@ class StreamingVideo extends \Asenine\Media\Preset
 
 	public function createFile($filepath)
 	{
-		if( !$Media = \Manager\Media::loadByHash($this->mediaHash) ) return false;
-
-		if( !$Media instanceof \Media\Video ) return false;
-
-		$Factory = new \Media\Generator\x264($Media, $this->x, $this->y);
-
+		$Factory = new \Media\Generator\x264($this->getMedia(), $this->x, $this->y);
 		return $Factory->saveToFile($filepath);
 	}
 }

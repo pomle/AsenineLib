@@ -13,14 +13,12 @@ interface iMedia
 
 class Media implements iMedia
 {
-	protected
-		$File;
+	public $File;
 
-	public
-		$mediaID,
-		$mediaHash,
-		$mimeType,
-		$fileOriginalName;
+	public $mediaID;
+	public $mediaHash;
+	public $mimeType;
+	public $fileOriginalName;
 
 
 	public static function canHandleFile($filePath)
@@ -32,31 +30,46 @@ class Media implements iMedia
 	{
 		if (!$File->reads()) {
 			throw new \RuntimeException("File not readable: \"" . $File . "\"");
-			return false;
 		}
 
-		if (!static::canHandleFile($File)) {
-			throw new \RuntimeException(get_called_class() . " can not handle file: \"" . $File . "\"");
-			return false;
+		/* If this object has been extended and has it's type set,
+		   ensure we only test that type so that Audio plugin does
+		   not accept Images etc. */
+		$requireType = null;
+		if (defined('static::TYPE')) {
+			$requireType = static::TYPE;
 		}
 
-		$mediaHash = $File->hash;
+		foreach (self::getPlugins() as $className) {
+			if ($requireType && $requireType != $className::TYPE) {
+				continue;
+			}
 
-		$Media = new static($mediaHash, $File);
-		$Media->mimeType = $File->mime;
+			if (!$className::canHandleFile($File)) {
+				continue;
+			}
 
-		return $Media;
+			$Media = new $className($File->hash, $File);
+			$Media->mimeType = $File->mime;
+			return $Media;
+		}
+
+		$fileName = $File->getLocation();
+		if ($requireType) {
+			$vanityNames = self::getTypes();
+			if (isset($vanityNames[$requireType])) {
+				$requireType = $vanityNames[$requireType];
+			}
+			throw new \InvalidArgumentException("$fileName is not of type $requireType.");
+		}
+		else {
+			throw new \InvalidArgumentException("No media plugin candidate for $fileName.");
+		}
 	}
 
 	final public static function createFromFilename($filename, $mime = null)
 	{
-		return self::createFromFile( new File($filename, null, null, $mime) );
-	}
-
-	final public static function createFromHash($mediaHash)
-	{
-		$filePath = DIR_MEDIA_SOURCE . $mediaHash;
-		return new static($mediaHash, new File($filePath) );
+		return self::createFromFile(new File($filename, null, null, $mime));
 	}
 
 	public static function createFromType($type, $mediaHash, File $File)
@@ -116,6 +129,53 @@ class Media implements iMedia
 	final public function getMediaHash()
 	{
 		return $this->mediaHash;
+	}
+
+	public static function getPlugins()
+	{
+		static $plugins;
+
+		if (!isset($plugins)) {
+			$plugins = array();
+
+			$pluginPath = realpath(__DIR__ . '/Media/Type');
+			if (false === $pluginPath) {
+				return $plugins;
+			}
+
+			$pluginPath .= '/';
+
+			$pluginFiles = glob($pluginPath . '*.php');
+
+			foreach ($pluginFiles as $pluginFile) {
+				if (!preg_match('/\/([A-Za-z0-9]+)\.php/u', $pluginFile, $className)) {
+					continue;
+				}
+
+				$className = '\\Asenine\\Media\\Type\\' . $className[1];
+
+				if (class_exists($className)) {
+					$plugins[$className::TYPE] = $className;
+				}
+			}
+		}
+
+		return $plugins;
+	}
+
+	public static function getTypes()
+	{
+		static $pluginNames;
+
+		if (!isset($pluginNames)) {
+			$pluginNames = array();
+			foreach (self::getPlugins() as $className) {
+				$pluginNames[$className::TYPE] = $className::DESCRIPTION;
+			}
+			asort($pluginNames);
+		}
+
+		return $pluginNames;
 	}
 
 	final public function isFileValid()

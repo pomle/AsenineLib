@@ -17,12 +17,7 @@ class Rotatable extends \Asenine\Media\Preset
 
 	public function createFile($filepath)
 	{
-		if( !$Media = \Manager\Media::loadByHash($this->mediaHash) ) return false;
-
-		if( !$Media instanceof \Media\Rotate ) return false;
-
-		$Factory = new \Media\Generator\RotateFrame($Media, $this->frameHeight, $this->numFrames, $this->quality);
-
+		$Factory = new \Media\Generator\RotateFrame($this->getMedia(), $this->frameHeight, $this->numFrames, $this->quality);
 		return $Factory->saveToFile($filepath);
 	}
 }

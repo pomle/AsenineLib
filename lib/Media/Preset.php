@@ -1,6 +1,9 @@
 <?php
 namespace Asenine\Media;
 
+use Asenine\Archiver;
+use Asenine\Media;
+
 interface iPreset
 {
 	public function createFile($filepath);
@@ -8,10 +11,18 @@ interface iPreset
 
 abstract class Preset implements iPreset
 {
-	protected
-		$mediaHash,
-		$subPath,
-		$ext;
+	protected static $Archiver;
+
+	protected $mediaHash;
+	protected $subPath;
+	protected $ext;
+
+
+	public static function setArchiver(Archiver $Archiver)
+	{
+		self::$Archiver = $Archiver;
+	}
+
 
 	final public function getFile($wait = true)
 	{
@@ -46,7 +57,7 @@ abstract class Preset implements iPreset
 						ftruncate($resource, 0);
 
 						if (!$this->createFile($filePath)) {
-							trigger_error(get_class($this) . "::createFile() returned false for $filePath", E_USER_WARNING);
+							throw new \RuntimeException(get_class($this) . "::createFile() returned false for $filePath");
 						}
 					}
 
@@ -86,6 +97,11 @@ abstract class Preset implements iPreset
 		return ASENINE_DIR_MEDIA_PUBLIC . $this->getFilePath();
 	}
 
+	final public function getMedia()
+	{
+		return Media::createFromFile($this->getSourceFile());
+	}
+
 	final public function getMediaHash()
 	{
 		return $this->mediaHash;
@@ -94,6 +110,14 @@ abstract class Preset implements iPreset
 	final public function getPath()
 	{
 		return 'autogen/preset/' . static::NAME . '/' . $this->subPath;
+	}
+
+	public function getSourceFile()
+	{
+		if (!self::$Archiver instanceof Archiver) {
+			throw new \RuntimeException('Archiver object not initialized.');
+		}
+		return self::$Archiver->getFile($this->mediaHash);
 	}
 
 	final public function getURL($wait = true)
@@ -106,7 +130,7 @@ abstract class Preset implements iPreset
 			return ASENINE_URL_MEDIA . $this->getFilePath();
 		}
 		catch (\Exception $e) {
-			throw new \Exception(get_called_class() . ' media generation failed, Reason: ' . $e->getMessage(), E_USER_WARNING);
+			throw new \RuntimeException(get_called_class() . ' media generation failed, Reason: ' . $e->getMessage());
 		}
 	}
 

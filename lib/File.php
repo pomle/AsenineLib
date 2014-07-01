@@ -112,14 +112,13 @@ class File implements iFile
 		$this->location = $location;
 
 		### File size can only be integer and must not be negative
-		if (!is_null($size) && (!is_int($size) && ($size < 0 ))) {
-			throw New \InvalidArgumentException(sprintf("Size must be integer and 0 or more"));
+		if (!is_null($size) && !is_int($size)) {
+			throw new \InvalidArgumentException("Size must be integer");
 		}
 
-		$this->hash = $hash;
-		$this->size = $size ?: filesize($this->location);
-		$this->mime = $mime;
 		$this->name = $name ?: basename($this->location);
+		$this->hash = $hash;
+		$this->mime = $mime;
 	}
 
 	public function __get($key)
@@ -229,7 +228,7 @@ class File implements iFile
 
 	public function getHash()
 	{
-		if (is_null($this->hash)) {
+		if (is_null($this->hash) && $this->exists()) {
 			$this->hash = hash_file('sha256', $this->location, false);
 		}
 
@@ -259,7 +258,7 @@ class File implements iFile
 
 	public function getSize()
 	{
-		if (is_null($this->size)) {
+		if (is_null($this->size) && $this->exists()) {
 			$this->size = filesize($this->location);
 		}
 

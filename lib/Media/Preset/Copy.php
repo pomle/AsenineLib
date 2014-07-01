@@ -13,11 +13,8 @@ class Copy extends \Asenine\Media\Preset
 
 	public function createFile($filepath)
 	{
-		if( !$Media = \Manager\Media::loadByHash($this->mediaHash) ) return false;
-
-		$sourceFile = $Media->getFilePath();
+		$sourceFile = $this->getSourceFile();
 		$destinationFile = $filepath;
-
 		return copy($sourceFile, $destinationFile);
 	}
 }

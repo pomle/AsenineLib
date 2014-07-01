@@ -5,9 +5,9 @@ class AspectThumb extends Thumb
 {
 	const NAME = 'aspectThumb';
 
-	public function __construct($Media, $x, $y)
+	public function __construct($mediaHash, $x, $y)
 	{
-		parent::__construct($Media, $x, $y, false);
+		parent::__construct($mediaHash, $x, $y, false);
 		$this->subPath = sprintf('%ux%u/', $this->x, $this->y);
 	}
 }
