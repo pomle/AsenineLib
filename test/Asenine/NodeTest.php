@@ -5,7 +5,7 @@
  * @author Pontus Persson <pom@spotify.com>
  */
 
-use \Asenine\Node;
+use Asenine\DOM\Node;
 
 class ActiveNode extends Node
 {

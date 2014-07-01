@@ -1,5 +1,5 @@
 <?php
-namespace Asenine
+namespace Asenine\DOM
 {
 	class Node
 	{
@@ -34,7 +34,7 @@ namespace Asenine
 
 		public function addAttr($key, $value)
 		{
-			$Attr = new Node\Attr($key, $value);
+			$Attr = new Attr($key, $value);
 			$this->attributes[(string)$key][] = $Attr;
 			return $Attr;
 		}
@@ -93,7 +93,7 @@ namespace Asenine
 	}
 }
 
-namespace Asenine\Node
+namespace Asenine\DOM
 {
 	class Attr
 	{
