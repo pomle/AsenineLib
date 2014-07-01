@@ -5,7 +5,7 @@
  * @author Pontus Persson <pom@spotify.com>
  */
 
-use \Asenine\User;
+use Asenine\Access\User;
 
 class UserTest extends PHPUnit_Framework_TestCase {
 
@@ -15,7 +15,7 @@ class UserTest extends PHPUnit_Framework_TestCase {
 
 	function test_Administrator()
 	{
-		$User = new \Asenine\User();
+		$User = new User();
 
 		/* Real "true" should validate as administrator */
 		$User->isAdministrator(true);
@@ -37,7 +37,7 @@ class UserTest extends PHPUnit_Framework_TestCase {
 		$policy2 = 'AllowBar';
 		$policy3 = 'AllowFooBar';
 
-		$User = new \Asenine\User();
+		$User = new User();
 
 		/* Add all policies and assert all tests are valid */
 		$User->addPolicy($policy1);

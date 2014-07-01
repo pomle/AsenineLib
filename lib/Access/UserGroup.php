@@ -1,5 +1,5 @@
 <?php
-namespace Asenine;
+namespace Asenine\Access;
 
 class UserGroup
 {

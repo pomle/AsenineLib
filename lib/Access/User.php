@@ -4,7 +4,7 @@
  *
  * @author Pontus Persson <pom@spotify.com>
  */
-namespace Asenine;
+namespace Asenine\Access;
 
 class User
 {
