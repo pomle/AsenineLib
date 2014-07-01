@@ -1,6 +1,6 @@
-<?phpphp
+<?php
 /**
- * Tests for Asenine User.php
+ * Tests for Asenine Utils
  *
  * @author Pontus Persson <pom@spotify.com>
  */
@@ -13,7 +13,7 @@ class UtilTest extends PHPUnit_Framework_TestCase {
 
 	function tearDown() { }
 
-	function test_AsenineUserClass()
+	function test_TokenCompare()
 	{
 		$testToken1 = 'FOO';
 		$testToken2 = 'BAR';

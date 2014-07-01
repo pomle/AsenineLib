@@ -1,4 +1,4 @@
-<?phpphp
+<?php
 /**
  * Tests for DataIO class.
  *
