@@ -40,16 +40,7 @@ class User
 	 */
 	public static function createSalt()
 	{
-		$salt = '';
-
-		$chars = str_split('./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz');
-		$charCount = 22;
-
-		while ($charCount--) {
-			$salt .= $chars[array_rand($chars)];
-		}
-
-		return $salt;
+		return \Asenine\Util\Token::createToken(22);
 	}
 
 	/**
@@ -68,7 +59,8 @@ class User
 			throw new \RuntimeException("bcrypt not supported in this installation. See http://php.net/crypt");
 		}
 
-		if (($saltLen = strlen($salt)) < 22) {
+		$saltLen = strlen($salt);
+		if ($saltLen < 22) {
 			throw new \InvalidArgumentException("Illegal salt.");
 		}
 
@@ -85,7 +77,7 @@ class User
 
 	public function __construct($userID = null)
 	{
-		$this->csrfToken = hash('sha256', 'eaks up a message into blocks of a fixed size and iterates over t' . uniqid('asenine-csrf', true));
+		$this->csrfToken = \Asenine\Util\Token::createToken();
 		$this->ip = $this->getCurrentIP();
 
 		$this->isAdministrator = false;
