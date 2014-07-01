@@ -1,6 +1,8 @@
 <?php
 namespace Asenine\Media\Type;
 
+use \Asenine\Disk\File;
+
 class Image extends _Visual
 {
 	const TYPE = ASENINE_MEDIA_TYPE_IMAGE;
@@ -11,7 +13,7 @@ class Image extends _Visual
 		return \Asenine\App\ImageGuru::isValidFile($filePath);
 	}
 
-	public static function createFromFile(\Asenine\File $File)
+	public static function createFromFile(File $File)
 	{
 		if( $Image = parent::createFromFile($File) )
 		{

@@ -1,8 +1,7 @@
 <?php
 namespace Asenine;
 
-class MediaException extends \Exception
-{}
+use Asenine\Disk\File;
 
 interface iMedia
 {

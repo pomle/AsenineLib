@@ -16,7 +16,7 @@ class FileTest extends PHPUnit_Framework_TestCase {
 		$fileName = 'Track.mp3';
 		$fileLocation = DIR_TEST_FILES . $fileName;
 
-		$File = new \Asenine\File($fileLocation);
+		$File = new \Asenine\Disk\File($fileLocation);
 
 		$this->assertSame($fileName, $File->getName());
 		$this->assertSame($fileLocation, $File->getLocation());

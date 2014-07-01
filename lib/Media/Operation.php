@@ -3,7 +3,7 @@ namespace Asenine\Media;
 
 class Operation
 {
-	public static function createFromFile(\Asenine\File $File, $preferredMediaType = null)
+	public static function createFromFile(\Asenine\Disk\File $File, $preferredMediaType = null)
 	{
 		$medias = \Asenine\Media\Manager::createFromFile($File);
 
@@ -40,7 +40,7 @@ class Operation
 	{
 		try
 		{
-			$File = \Asenine\File::fromURL($url);
+			$File = \Asenine\Disk\File::fromURL($url);
 
 			$Media = self::importFileToLibrary($File, $File->name, $preferredMediaType, null, $mediaID);
 
@@ -56,7 +56,7 @@ class Operation
 		}
 	}
 
-	public static function importFileToLibrary(\Asenine\File $File, $originalFilename = null, $preferredMediaType = null, $requireType = null, $mediaID = null)
+	public static function importFileToLibrary(\Asenine\Disk\File $File, $originalFilename = null, $preferredMediaType = null, $requireType = null, $mediaID = null)
 	{
 
 		### Create Media Object from File

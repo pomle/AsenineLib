@@ -5,10 +5,7 @@
  *
  * @author Pontus Persson <pom@spotify.com>
  */
-namespace Asenine;
-
-class ArchiverException extends \Exception
-{}
+namespace Asenine\Disk;
 
 class Archiver
 {
@@ -61,10 +58,10 @@ class Archiver
 	}
 
 	/**
-	 * Returns an instance of \Asenine\File for a file name.
+	 * Returns an instance of \Asenine\Disk\File for a file name.
 	 *
 	 * @param string $name 		File name to resolve into a complete file path.
-	 * @return \Asenine\File
+	 * @return \Asenine\Disk\File
 	 */
 	public function getFile($name)
 	{
@@ -105,12 +102,12 @@ class Archiver
 
 	/**
 	 * Stores a file in the archive under the correct dir, creating any dir necessary
-	 * and returns a new \Asenine\File object for the new file. If file already exists in
+	 * and returns a new \Asenine\Disk\File object for the new file. If file already exists in
 	 * in archive, that one will be used.
 	 *
-	 * @param \Asenine\File $File 	File object to use.
+	 * @param \Asenine\Disk\File $File 	File object to use.
 	 * @param bool $overwrite 		Overwrites if already exists.
-	 * @return \Asenine\File
+	 * @return \Asenine\Disk\File
 	 */
 	public function putFile(File $File, $overwrite = false)
 	{
@@ -123,15 +120,15 @@ class Archiver
 		if (file_exists($archiveFilePath)) {
 
 			if (!is_dir($archiveFilePath)) {
-				throw New ArchiverException(sprintf('"%s" already exists and is not a dir', $archiveFilePath));
+				throw new \RuntimeException(sprintf('"%s" already exists and is not a dir', $archiveFilePath));
 			}
 
 			if (!is_writable($archiveFilePath)) {
-				throw New ArchiverException(sprintf('"%s" is not writeable', $archiveFilePath));
+				throw new \RuntimeException(sprintf('"%s" is not writeable', $archiveFilePath));
 			}
 		}
 		elseif (!@mkdir($archiveFilePath, 0755, true)) {
-			throw new ArchiverException(sprintf('Could not create dir "%s"', $archiveFilePath));
+			throw new \RuntimeException(sprintf('Could not create dir "%s"', $archiveFilePath));
 		}
 
 

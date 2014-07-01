@@ -4,10 +4,7 @@
  *
  * @author Pontus Persson <pom@spotify.com>
  */
-namespace Asenine;
-
-class FileException extends \Exception
-{}
+namespace Asenine\Disk;
 
 interface iFile
 {

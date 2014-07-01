@@ -1,7 +1,7 @@
 <?php
 namespace Asenine\Media;
 
-use Asenine\Archiver;
+use Asenine\Disk\Archiver;
 use Asenine\Media;
 
 interface iPreset

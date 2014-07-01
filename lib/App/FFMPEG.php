@@ -201,7 +201,7 @@ class FFMPEG extends Common\Root
 		$str = '';
 
 		### If input is a \File we check for mime type. Decreases the chance of identification problems. Notice that mime type doesn't correspond exactly to FFMPEG formats. Some further logic may be needed here for some files
-		if( $File instanceof \Asenine\File && $format = self::guessFormat($File) )
+		if( $File instanceof \Asenine\Disk\File && $format = self::guessFormat($File) )
 		{
 			$formats = self::getFormats();
 			if( in_array($format, $formats) )
@@ -213,7 +213,7 @@ class FFMPEG extends Common\Root
 		return $str;
 	}
 
-	public static function guessFormat(\Asenine\File $File)
+	public static function guessFormat(\Asenine\Disk\File $File)
 	{
 		if( isset($File->name) && preg_match('/.(\w+)$/', $File->name, $matches) )
 		{
