@@ -114,6 +114,7 @@ class File implements iFile
 		}
 
 		$this->name = $name ?: basename($this->location);
+		$this->size = $size;
 		$this->hash = $hash;
 		$this->mime = $mime;
 	}
@@ -207,12 +208,14 @@ class File implements iFile
 	{
 		if (!isset($this->extension)) {
 
+			$extMaxLen = 5;
+
 			$parts = explode('.', $this->name);
 
-			if (count($parts) > 1 && strlen($ext = array_pop($parts)) < 5) {
+			if (count($parts) > 1 && strlen($ext = array_pop($parts)) <= $extMaxLen) {
 				$this->extension = $ext;
 			}
-			elseif (($m = explode('/', $this->getMime())) && ($ext = end($m))) {
+			elseif (($m = explode('/', $this->getMime())) && strlen($ext = array_pop($m)) <= $extMaxLen) {
 				$this->extension = $ext;
 			}
 			else {
