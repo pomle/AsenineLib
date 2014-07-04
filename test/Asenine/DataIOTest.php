@@ -46,7 +46,7 @@ class DataIOTest extends PHPUnit_Framework_TestCase {
 
 	function tearDown() { }
 
-	function test_tableRowDeleteVerify()
+	function testTableRowDeleteVerify()
 	{
 		$DataIO = new DataIOTester($this->DB);
 

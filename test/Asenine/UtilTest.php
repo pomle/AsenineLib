@@ -13,7 +13,7 @@ class UtilTest extends PHPUnit_Framework_TestCase {
 
 	function tearDown() { }
 
-	function test_TokenCompare()
+	function testTokenCompare()
 	{
 		$testToken1 = 'FOO';
 		$testToken2 = 'BAR';

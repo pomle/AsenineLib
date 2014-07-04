@@ -13,7 +13,7 @@ class UserTest extends PHPUnit_Framework_TestCase {
 
 	function tearDown() { }
 
-	function test_Administrator()
+	function testAdministrator()
 	{
 		$User = new User();
 
@@ -31,7 +31,7 @@ class UserTest extends PHPUnit_Framework_TestCase {
 		$this->assertFalse($User->isAdministrator());
 	}
 
-	function test_Policy()
+	function testPolicy()
 	{
 		$policy1 = 'AllowFoo';
 		$policy2 = 'AllowBar';
@@ -60,46 +60,5 @@ class UserTest extends PHPUnit_Framework_TestCase {
 
 		$this->assertFalse($User->hasPolicy($policy1));
 		$this->assertFalse($User->hasPolicies($policy1, $policy2, $policy3));
-	}
-
-	function test_Storing()
-	{
-		/** ### Test uncommented since it depends on a db
-		$username_desired = 'phpunit';
-		$password_desired = 'phpunitpassword';
-
-		if($User = User::loadByUsername($username_desired)) {
-			User::removeFromDB($User);
-		}
-
-		$User = new User();
-
-		$User->isEnabled = true;
-		$User->username = $username_desired;
-
-		User::saveToDB($User);
-
-		$userID = $User->userID;
-
-		unset($User);
-
-		$User = User::loadFromDB($userID);
-
-		$this->assertSame(true, $User->isEnabled);
-		$this->assertSame($username_desired, $User->username);
-
-		### Set password
-		$this->assertTrue($User->setPassword($password_desired));
-		unset($User);
-
-		### Ensure login is possible with desired password
-		$User = User::login($username_desired, $password_desired);
-
-		$this->assertTrue($User instanceof User);
-
-		User::removeFromDB($User);
-
-		### Ensure user is no longer in database
-		$this->assertFalse(User::loadByUsername($username_desired));*/
 	}
 }
