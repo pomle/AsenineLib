@@ -8,16 +8,6 @@ namespace Asenine\Access;
 
 class User
 {
-	const USERNAME_MIN_LEN = 1;
-	const USERNAME_MAX_LEN = 32;
-
-	const PASSWORD_MIN_LEN = 6;
-	const PASSWORD_MAX_AGE = null;
-
-	private $isSettingsChanged = false;
-
-	protected $csrfToken;
-	protected $ip;
 	protected $policies = array();
 	public $settings = array();
 
@@ -77,9 +67,7 @@ class User
 
 	public function __construct($userID = null)
 	{
-		$this->csrfToken = \Asenine\Util\Token::createToken();
-		$this->ip = $this->getCurrentIP();
-
+		$this->isEnabled = false;
 		$this->isAdministrator = false;
 		$this->isLoggedIn = false;
 	}
@@ -96,44 +84,12 @@ class User
 		return $this;
 	}
 
-	/* Updates security state anset takes action to log the user out if any of them match */
-	final public function enforceSecurity()
-	{
-		$kick = false;
-
-		$clientIP = getenv('REMOTE_ADDR');
-
-		/* If user has been idle for too long, kick him. */
-		if ($this->timeKickOut && time() >= $this->timeKickOut) {
-			$kick = true;
-		}
-
-		/* If user has been disabled in database, kick. */
-		if (true !== $this->isEnabled) {
-			$kick = true;
-		}
-
-		if ($kick) {
-			$this->isLoggedIn = false;
-		}
-	}
-
 	public function dropPolicy($policy)
 	{
 		if (isset($this->policies[$policy])) {
 			unset($this->policies[$policy]);
 		}
 		return $this;
-	}
-
-	public function getCSRFToken()
-	{
-		return $this->csrfToken;
-	}
-
-	public function getCurrentIP()
-	{
-		return getenv('REMOTE_ADDR');
 	}
 
 	public function getID()
@@ -154,11 +110,6 @@ class User
 		else {
 			return null;
 		}
-	}
-
-	public function getStoredIP()
-	{
-		return $this->ip;
 	}
 
 	public function hasPolicy($policy)
@@ -245,8 +196,6 @@ class User
 		else {
 			$this->settings[$key] = $value;
 		}
-
-		$this->isSettingsChanged = true;
 
 		return true;
 	}
