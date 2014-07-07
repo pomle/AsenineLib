@@ -19,7 +19,7 @@ class SQLite extends \Asenine\Database\Connection
 	 */
 	public function query($query)
 	{
-		if (0 === strpos($query, 'INSERT')) {
+		if (0 === strpos($query, 'INSERT') && strpos($query, 'VALUES') > 0) {
 
 			//echo $query, "\n";
 
