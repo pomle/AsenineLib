@@ -8,7 +8,7 @@ use Asenine\Disk\File;
 
 class FileTest extends PHPUnit_Framework_TestCase {
 
-	function test_File()
+	function testFile()
 	{
 		$fileName = 'Track.mp3';
 		$fileLocation = DIR_TEST_FILES . $fileName;
