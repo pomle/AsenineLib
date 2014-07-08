@@ -6,6 +6,8 @@
  */
 namespace Asenine\Access;
 
+use Asenine\Util\Token;
+
 class User
 {
 	protected $policies = array();
@@ -30,7 +32,7 @@ class User
 	 */
 	public static function createSalt()
 	{
-		return \Asenine\Util\Token::createToken(22);
+		return Token::createToken(22);
 	}
 
 	/**
@@ -198,5 +200,27 @@ class User
 		}
 
 		return true;
+	}
+
+	public function verifyOTP($secret, $otp, $timestamp = null)
+	{
+		/* Populate array of timestamps to check against to protect against accidental overlap. */
+		$timestamp = $timestamp ?: time();
+		$timestamps = array($timestamp, $timestamp - 30, $timestamp + 30);
+
+		$totp = new \OTPHP\TOTP($secret);
+		foreach ($timestamps as $t) {
+			if (true === $totp->verify($otp, $t)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public function verifyPassword($salt, $storedHash, $testPassword)
+	{
+		$calculatedHash = self::createHash($testPassword, $salt);
+		return Token::safeCompare($storedHash, $calculatedHash);
 	}
 }
