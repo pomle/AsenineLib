@@ -178,20 +178,20 @@ class User
 	 * @return bool
 	 * @return self
 	 */
-	public function setSetting($key, $value = null)
+	public function setSetting($key)
 	{
+		$args = func_get_args();
+
 		if (!is_string($key)) {
 			throw new \InvalidArgumentException('Key argument must be string.');
 		}
 
-		if (is_null($value) && isset($this->settings[$key])) {
+		if (!array_key_exists(1, $args)) {
 			unset($this->settings[$key]);
 		}
 		else {
-			$this->settings[$key] = $value;
+			$this->settings[$key] = $args[1];
 		}
-
-		return true;
 	}
 
 	public function verifyOTP($secret, $otp, $timestamp = null)
