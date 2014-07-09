@@ -100,7 +100,7 @@ class User
 
 	public function getPolicies()
 	{
-		return $this->policies;
+		return array_keys($this->policies);
 	}
 
 	public function getSetting($key)
@@ -122,13 +122,11 @@ class User
 	public function hasPolicies($policies)
 	{
 		$policies = is_array($policies) ? $policies : func_get_args();
-
 		foreach ($policies as $policy) {
 			if (true !== $this->hasPolicy($policy)) {
 				return false;
 			}
 		}
-
 		return true;
 	}
 
@@ -136,13 +134,11 @@ class User
 	public function hasAnyPolicy($policies)
 	{
 		$policies = is_array($policies) ? $policies : func_get_args();
-
 		foreach ($policies as $policy) {
 			if (true === $this->hasPolicy($policy)) {
 				return true;
 			}
 		}
-
 		return false;
 	}
 
