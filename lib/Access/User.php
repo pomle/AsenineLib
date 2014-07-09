@@ -10,12 +10,11 @@ use Asenine\Util\Token;
 
 class User
 {
+	protected $isAdministrator;
 	protected $policies = array();
-	public $settings = array();
 
 	public $userID;
 	public $username;
-	public $isAdministrator;
 	public $isEnabled;
 	public $isLoggedIn;
 	public $timeAutoLogout;
@@ -25,7 +24,7 @@ class User
 	public $email;
 	public $phone;
 	public $preferences;
-
+	public $settings = array();
 
 	/**
 	 * Creates a Blowfish-compatible, random string for use as the user's unique salt
@@ -116,7 +115,7 @@ class User
 
 	public function hasPolicy($policy)
 	{
-		return (true === $this->isAdministrator()) || isset($this->policies[$policy]);
+		return (true === $this->isAdministrator) || isset($this->policies[$policy]);
 	}
 
 	/* Returns true if user has ALL of the supplied policies */
@@ -157,13 +156,10 @@ class User
 	 */
 	public function isAdministrator($changeTo = null)
 	{
-		if (is_null($changeTo)) {
-			return (true === $this->isAdministrator);
-		}
-		else {
+		if (!is_null($changeTo)) {
 			$this->isAdministrator = (true === $changeTo);
-			return $this;
 		}
+		return (true === $this->isAdministrator);
 	}
 
 	public function isLoggedIn()
