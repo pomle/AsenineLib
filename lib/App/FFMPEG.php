@@ -30,7 +30,7 @@ class FFMPEG extends Common\Root
 		foreach($inputFiles as &$f)
 			$f = self::getInputCommand($f);
 
-		$command = sprintf('%s -y %s %s %s %s 2>&1', self::$exe_ffmpeg, join(' ', $optPre), join($inputFiles), join(' ', $optPost), $outputFile ? \escapeshellarg($outputFile) : '');
+		$command = sprintf('%s -y %s %s %s %s', self::$exe_ffmpeg, join(' ', $optPre), join($inputFiles), join(' ', $optPost), $outputFile ? \escapeshellarg($outputFile) : '');
 
 		return self::runCommand($command);
 	}
@@ -39,7 +39,7 @@ class FFMPEG extends Common\Root
 	{
 		if( !self::$exe_ffprobe ) return false;
 
-		$command = sprintf('%s %s 2>&1', self::$exe_ffprobe, self::getInputCommand($inputFile));
+		$command = sprintf('%s %s', self::$exe_ffprobe, self::getInputCommand($inputFile));
 
 		#var_dump($command);
 		self::runCommand($command); ### If FFPROBE does not exist, we fall back to FFMPEG parsing, which returns false if no output file is specified but still provides parse:able output

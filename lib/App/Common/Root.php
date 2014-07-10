@@ -27,7 +27,7 @@ abstract class Root implements _Root
 		if( self::$verbose ) echo $command, "\n";
 		self::$lastOutput = array();
 		self::$lastCommand = $command;
-		self::$lastAnswer = exec($command, self::$lastOutput, $exitCode);
+		self::$lastAnswer = exec($command . ' 2>&1', self::$lastOutput, $exitCode);
 		self::$lastExitCode = $exitCode;
 		return !(bool)$exitCode; // Returns true if 0, false if not
 	}
