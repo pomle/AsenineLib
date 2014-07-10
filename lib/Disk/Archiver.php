@@ -118,11 +118,9 @@ class Archiver
 		$archiveFilePath = $this->getFilePath($name);
 
 		if (file_exists($archiveFilePath)) {
-
 			if (!is_dir($archiveFilePath)) {
 				throw new \RuntimeException(sprintf('"%s" already exists and is not a dir', $archiveFilePath));
 			}
-
 			if (!is_writable($archiveFilePath)) {
 				throw new \RuntimeException(sprintf('"%s" is not writeable', $archiveFilePath));
 			}
@@ -131,9 +129,7 @@ class Archiver
 			throw new \RuntimeException(sprintf('Could not create dir "%s"', $archiveFilePath));
 		}
 
-
 		$archiveFileName = $this->getFileLocation($name);
-
 
 		if (!file_exists($archiveFileName) || $overwrite === true) {
 			$ArchivedFile = $File->copy($archiveFileName);
