@@ -12,6 +12,8 @@ interface iPreset
 abstract class Preset implements iPreset
 {
 	protected static $Archiver;
+	public static $generationPath;
+	public static $generationUrl;
 
 	protected $mediaHash;
 	protected $subPath;
@@ -31,7 +33,7 @@ abstract class Preset implements iPreset
 		if (!$fileExists) {
 			$sleepTime = 100000; // 100 ms
 
-			$dirPath = ASENINE_DIR_MEDIA_PUBLIC . $this->getPath();
+			$dirPath = self::$generationPath . '/' . $this->getPath();
 			if (!file_exists($dirPath) && !is_dir($dirPath) && !@mkdir($dirPath, 0755, true)) {
 				throw new \RuntimeException("Path not reachable \"$dirPath\"");
 			}
@@ -94,7 +96,7 @@ abstract class Preset implements iPreset
 
 	final public function getFullFilePath()
 	{
-		return ASENINE_DIR_MEDIA_PUBLIC . $this->getFilePath();
+		return self::$generationPath . '/' . $this->getFilePath();
 	}
 
 	final public function getMedia()
@@ -127,7 +129,7 @@ abstract class Preset implements iPreset
 				return false;
 			}
 
-			return ASENINE_URL_MEDIA . $this->getFilePath();
+			return self::$generationUrl . $this->getFilePath();
 		}
 		catch (\Exception $e) {
 			throw new \RuntimeException(get_called_class() . ' media generation failed, Reason: ' . $e->getMessage());
