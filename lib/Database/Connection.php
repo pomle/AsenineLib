@@ -152,7 +152,7 @@ class Connection
 
 		if (false === $Result) {
 			$errors = $this->getPDO()->errorInfo();
-			throw new Exception(Debug::log('Error in query: "' . $query . '": ' . $errors[2]));
+			throw new \LogicException("Query failed: " . $errors[2] . ", " . $query);
 		}
 
 		return $Result;
