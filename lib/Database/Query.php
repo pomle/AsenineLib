@@ -74,43 +74,45 @@ class Query
 			$flag = $matches[1];
 
 			if (!array_key_exists($index, $params)) {
-				throw new QueryException(sprintf('Missing argument %d for placeholder "%s" in query %s', $index, $matches[0], $query));
+				throw new \InvalidArgumentException(sprintf('Missing argument %d for placeholder "%s" in query %s', $index + 1, $matches[0], $query));
 			}
 
 			$param = $params[$index++];
 
-
 			switch($flag) {
-
-				/* Array of integers. */
-				case 'a':
-					$param = array_map('intval', (array)$param + array(0));
-					return '(' . join(',', $param) . ')';
-				break;
-
 				/* Array of strings. */
+				case 'a':
 				case 'A':
-					$param = array_map(array($Connection, 'escape'), $param);
-					return '(' . join(',', $param) . ')';
-				break;
+					if (!is_array($param) && !$param instanceof \Traversable) {
+						throw new \InvalidArgumentException("Paramter for %$flag must be traversable");
+					}
+					foreach ($param as $item) {
+						$value = is_array($item) ? $item[0] : $item;
+						$values[] = ($flag === 'A') ? $Connection->escape($value) : (int)$value;
+					}
+					if (!isset($values)) {
+						throw new \UnexpectedValueException("Traversable did not yield");
+					}
+					return '(' . join(',', $values) . ')';
+					break;
 
 				/* Boolean. */
 				case 'b':
 					return $param
 						? $Connection::TYPE_TRUE
 						: $Connection::TYPE_FALSE;
-				break;
+					break;
 
 				/* Signed integer. */
 				case 'd':
 					return sprintf('%d', $param);
-				break;
+					break;
 
 				/* Float. */
 				case 'F':
 				case 'f':
 					return sprintf('%F', (float)$param);
-				break;
+					break;
 
 				/* Unsigned integer. */
 				case 'u':
@@ -118,7 +120,7 @@ class Query
 						return $param->format('U');
 					}
 					return sprintf('%u', $param);
-				break;
+					break;
 
 				/* LIKE match string.
 						Notice that this case continues to next on purpose. */
@@ -128,19 +130,19 @@ class Query
 				/* String. */
 				case 's':
 					return $Connection->escape($param);
-				break;
+					break;
 
 				case 't':
 					if ($param instanceof \DateTime) {
 						return $param->format($Connection::TYPE_TIMESTAMP);
 					}
 					else {
-						return 'NULL';
+						return $Connection::TYPE_NULL;
 					}
-				break;
+					break;
 			}
 
-			throw new QueryException(sprintf('No handler for placeholder "%s" in query "%s"', $matches[0], $query));
+			throw new \InvalidArgumentException(sprintf('No handler for placeholder "%s" in query "%s"', $matches[0], $query));
 		};
 
 		$query = preg_replace_callback('/%([AabduFfSst])/', $injector, $query);
