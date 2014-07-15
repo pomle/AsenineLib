@@ -4,9 +4,17 @@ namespace Asenine\CLI;
 class Helper
 {
 	public $options = array();
+	public $flags = array();
 
 	public function addOption(Option $Option, &$result = null)
 	{
+		foreach ($Option->flags as $f) {
+			if (in_array($f, $this->flags)) {
+				throw new \LogicException("Ambigious flag '$f'.");
+			}
+			$this->flags[] = $f;
+		}
+
 		// First set result to current value...
 		$result = $Option->value;
 		// ...then bind.
