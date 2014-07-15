@@ -24,7 +24,8 @@ class Helper
 
 	public function getHelpText()
 	{
-		$text = 'Usage: ' . basename(__FILE__);
+		global $argv;
+		$text = 'Usage: ' . $argv[0];
 
 		$d = ' ';
 		$lines = array();
