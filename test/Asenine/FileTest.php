@@ -10,6 +10,17 @@ class FileTest extends PHPUnit_Framework_TestCase {
 
 	function testFile()
 	{
+		$testFiles = array(
+			'/tmp/phpunit_test_file',
+			'/tmp/phpunit_another_test_file'
+		);
+
+		foreach ($testFiles as $f) {
+			if (file_exists($f)) {
+				$this->fail("$f already exists.");
+			}
+		}
+
 		$fileName = 'Track.mp3';
 		$fileLocation = DIR_TEST_FILES . $fileName;
 
@@ -40,5 +51,24 @@ class FileTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(null, $File->getExtension());
 		$File = new File('/tmp/fakefile', null, null, 'multi.dotted.just.right');
 		$this->assertEquals('right', $File->getExtension());
+
+		list($f1, $f2) = $testFiles;
+		$File = new File($f1);
+		$this->assertFalse($File->exists());
+		touch($f1);
+		$this->assertTrue($File->exists());
+		$File->move($f2);
+		$this->assertEquals($f2, $File->getLocation());
+		$this->assertTrue($File->exists());
+		$NewFile = $File->copy($f1);
+		$this->assertTrue($NewFile->exists());
+		$NewFile->delete();
+		$this->assertFalse($NewFile->exists());
+		$this->assertTrue($File->writes());
+		$this->assertTrue($File->delete());
+		$this->assertFalse($File->exists());
+		mkdir($f1);
+		$this->assertFalse($File->exists()); // Dirs are not files to us.
+		rmdir($f1);
 	}
 }

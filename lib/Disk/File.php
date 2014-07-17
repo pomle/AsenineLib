@@ -173,7 +173,7 @@ class File implements iFile
 
 	public function exists()
 	{
-		return file_exists($this->location);
+		return file_exists($this->location) && is_file($this->location);
 	}
 
 	public function link($at)
