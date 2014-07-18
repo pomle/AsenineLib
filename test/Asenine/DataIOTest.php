@@ -19,7 +19,7 @@ class DataIOTester extends \Asenine\DataIO\DB
 
 	public function purge(array $ids)
 	{
-		$this->tableRowDeleteVerify('test_table', $ids);
+		$this->DB->execute("DELETE FROM test_table WHERE id in %a", $ids);
 	}
 
 	public function store(array $objects)
@@ -49,13 +49,9 @@ class DataIOTest extends PHPUnit_Framework_TestCase {
 	function testTableRowDeleteVerify()
 	{
 		$DataIO = new DataIOTester($this->DB);
-
 		$DataIO->storeOne(1);
+		$this->assertEquals(1, $DataIO->fetchOne(1));
 		$DataIO->purgeOne(1);
-
-		try {
-			$DataIO->purgeOne(1);
-			$this->fail('Invalid call to purge did not except.');
-		} catch (\RuntimeException $e) {}
+		$this->assertFalse($DataIO->fetchOne(1));
 	}
 }

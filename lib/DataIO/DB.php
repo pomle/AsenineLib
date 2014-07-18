@@ -6,7 +6,7 @@
  */
 namespace Asenine\DataIO;
 
-use \Asenine\Database\Connection;
+use Asenine\Database\Connection;
 
 interface iDB
 {
@@ -17,17 +17,16 @@ interface iDB
 
 abstract class DB implements iDB
 {
-	protected
-		$DB;
+	protected $DB;
 
 	/**
 	 * Creates a new instance of the IO class.
 	 *
 	 * @param \Asenine\Database\Connection $Conn 	An instance of Database Connection to use.
 	 */
-	public function __construct(Connection $Conn)
+	public function __construct(Connection $Connection)
 	{
-		$this->DB = $Conn;
+		$this->DB = $Connection;
 	}
 
 
@@ -99,16 +98,5 @@ abstract class DB implements iDB
 	public function storeOne($o)
 	{
 		return $this->store(array($o));
-	}
-
-
-	protected function tableRowDeleteVerify($tableName, array $ids, $colName = 'id')
-	{
-		foreach ($ids as $id) {
-			$Result = $this->DB->execute("DELETE FROM $tableName WHERE $colName = %d", $id);
-			if (0 === $Result->rowCount()) {
-				throw new \RuntimeException("Row at $colName $id in $tableName was not deleted");
-			}
-		}
 	}
 }
