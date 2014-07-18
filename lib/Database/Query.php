@@ -91,7 +91,8 @@ class Query
 						$values[] = ($flag === 'A') ? $Connection->escape($value) : (int)$value;
 					}
 					if (!isset($values)) {
-						throw new \UnexpectedValueException("Traversable did not yield");
+						$values = array(0);
+						// throw new \UnexpectedValueException("Traversable did not yield");
 					}
 					return '(' . join(',', $values) . ')';
 					break;

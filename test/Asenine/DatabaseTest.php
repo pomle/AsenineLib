@@ -63,9 +63,15 @@ class DatabaseTest extends PHPUnit_Framework_TestCase {
 		$sql = $sqliteQuery->prepare("SELECT * FROM test WHERE id IN %A", $Result);
 		$this->assertEquals('SELECT * FROM test WHERE id IN (\'Escap\'\'e "this"0\',\'Escap\'\'e "this"1\',\'Escap\'\'e "this"2\',\'Escap\'\'e "this"3\')', $sql);
 
-
+		/*
+		If the traversable sent as argument for %a does not yield any results we add a zero int.
+		This is for BC.
+		TODO: Throw exception if not yielding.
 		try { $e = null; $sqliteQuery->prepare("SELECT * FROM test WHERE id IN %a", $Result);
 		} catch (\Exception $e) {} $this->assertInstanceOf('\UnexpectedValueException', $e);
+		*/
+		$sql = $sqliteQuery->prepare("SELECT * FROM test WHERE id IN %a", $Result);
+		$this->assertEquals('SELECT * FROM test WHERE id IN (0)', $sql);
 
 		try { $e = null; $sqliteQuery->prepare("SELECT * FROM test WHERE id IN %a", 'haaaalo');
 		} catch (\Exception $e) {} $this->assertInstanceOf('\InvalidArgumentException', $e);
