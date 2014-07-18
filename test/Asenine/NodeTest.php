@@ -40,4 +40,19 @@ class NodeTest extends PHPUnit_Framework_TestCase {
 		$Node->lastname = 'Jony "M" Jackson';
 		$this->assertEquals('<node firstname="Phyllis &amp; Gene" lastname="Jony &quot;M&quot; Jackson" data-meta="Jony &quot;M&quot; Jackson" class="super"></node>', (string)$Node);
 	}
+
+	function testChilding()
+	{
+		$Parent = new Node();
+		$Parent->tag = 'parent';
+		$Child = new Node();
+		$Child->tag = 'child';
+		$Parent->addChild($Child);
+		$this->assertEquals('<parent><child></child></parent>', (string)$Parent);
+
+		$Subchild = new Node();
+		$Subchild->tag = 'subchild';
+		$Child->addChild($Subchild);
+		$this->assertEquals('<parent><child><subchild></subchild></child></parent>', (string)$Parent);
+	}
 }
