@@ -10,3 +10,4 @@ spl_autoload_register(function ($class) {
 
 define('DIR_TEST_RESOURCES', __DIR__ . '/resource/');
 define('DIR_TEST_FILES', DIR_TEST_RESOURCES . 'files/');
+define('DIR_TEST_TARGETS', DIR_TEST_RESOURCES . 'targets/');

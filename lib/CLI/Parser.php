@@ -3,16 +3,33 @@ namespace Asenine\CLI;
 
 class Parser
 {
-	public $options = array();
-	public $flags = array();
+	public $arguments;
+	public $options;
+	public $results;
+	public $switches;
+
+	public function __construct($argv = null)
+	{
+		if (is_null($argv)) {
+			global $argv;
+		}
+		if (!isset($argv) || !is_array($argv)) {
+			throw new \RuntimeException('Command line arguments not available.');
+		}
+		$this->arguments = $argv;
+		$this->options = array();
+		$this->results = new \stdClass();
+		$this->switches = array();
+	}
+
 
 	public function addOption(Option $Option, &$result = null)
 	{
-		foreach ($Option->flags as $f) {
-			if (in_array($f, $this->flags)) {
-				throw new \LogicException("Ambigious flag '$f'.");
+		foreach ($Option->switches as $switch) {
+			if (in_array($switch, $this->switches)) {
+				throw new \LogicException("Ambigious flag '$switch'.");
 			}
-			$this->flags[] = $f;
+			$this->switches[] = $switch;
 		}
 
 		// First set result to current value...
@@ -22,9 +39,14 @@ class Parser
 		$this->options[] = $Option;
 	}
 
+	public function getArguments()
+	{
+		return $this->arguments;
+	}
+
 	public function getHelpText()
 	{
-		global $argv;
+		$argv = $this->getArguments();
 		$text = 'Usage: ' . $argv[0];
 
 		$d = ' ';
@@ -47,10 +69,12 @@ class Parser
 		$colPos = max($lineLen) + 4;
 		$lineLen = array();
 		foreach ($this->options as $i => $O) {
-			$l = $lines[$i];
-			$lines[$i] .= str_repeat($d, $colPos - mb_strlen($l)) . $O->desc;
-			if (!is_null($O->default)) {
-				$lines[$i] .= ' (default: ' . $O->default . ')';
+			if ($O->desc) {
+				$l = $lines[$i];
+				$lines[$i] .= str_repeat($d, $colPos - mb_strlen($l)) . $O->desc;
+				if (!is_null($O->default)) {
+					//$lines[$i] .= ' (default: ' . $O->default . ')';
+				}
 			}
 		}
 
@@ -58,10 +82,16 @@ class Parser
 		return $text;
 	}
 
-	public function parse(array $params)
+	public function parse()
 	{
+		$this->results = new \stdClass();
 		foreach ($this->options as $O) {
-			$O->parseArguments($params);
+			$O->parseArguments($this->arguments);
+			foreach ($O->switches as $s) {
+				// Populate results object with values on switches as keys.
+				$switch = trim($s, '--');
+				$this->results->$switch = $O->value;
+			}
 		}
 	}
 }

@@ -5,8 +5,8 @@ use Asenine\CLI\Option;
 
 class Help extends On
 {
-	public function __construct($s = 'h', $l = 'help', $d = 'no', $desc = 'Display help.')
+	public function __construct($s = null, $d = false, $desc = 'Display help.')
 	{
-		parent::__construct($s, $l, $d, $desc);
+		parent::__construct($s ?: array('-h', '--help'), $d, $desc);
 	}
 }

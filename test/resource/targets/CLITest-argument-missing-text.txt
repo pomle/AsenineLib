@@ -1,0 +1,6 @@
+Argument error: Missing required flag '-t/--text'.
+Usage: script.php --text STRING --integer NUM --bool (yes|no) [--help]
+  -t/--text
+  -i/--integer
+  -b/--bool
+  -h/--help       Display help.

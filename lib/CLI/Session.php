@@ -3,21 +3,23 @@ namespace Asenine\CLI;
 
 class Session
 {
-	public $printHelpOnError = true;
+	public static $errorStream = STDERR;
+	public static $outputStream = STDOUT;
 
 	protected $Parser;
-	protected $helpOption;
-	protected $main;
+	protected $entryPoint;
 
+	public $helpOption;
+	public $printHelpOnError = true;
 
-	public function __construct(Parser $Parser, $main)
+	public function __construct(Parser $Parser, $entryPoint)
 	{
-		if (!is_callable($main)) {
+		if (!is_callable($entryPoint)) {
 			throw new \InvalidArgumentException('Entrypoint not callable.');
 		}
 
 		$this->Parser = $Parser;
-		$this->main = $main;
+		$this->entryPoint = $entryPoint;
 	}
 
 
@@ -30,33 +32,28 @@ class Session
 	public function run()
 	{
 		try {
-			global $argv;
-			if (!isset($argv) || !is_array($argv)) {
-				throw new \RuntimeException('Command line arguments not available.');
-			}
-
+			$arguments = $this->Parser->getArguments();
 			if ($this->helpOption) {
-				$this->helpOption->parseArguments($argv);
+				$this->helpOption->parseArguments($arguments);
 				if (true === $this->helpOption->value) {
-					echo $this->Parser->getHelpText();
+					fwrite(self::$outputStream, $this->Parser->getHelpText());
 					return 0;
 				}
 			}
 
-			$this->Parser->parse($argv);
-			$main = $this->main;
-			$main();
+			$this->Parser->parse();
+			$entryPoint = $this->entryPoint;
+			$entryPoint($this->Parser->results);
 			return 0;
 
 		} catch (OptionException $e) {
-			echo "Argument error: ", $e->getMessage(), PHP_EOL;
+			fwrite(self::$errorStream, "Argument error: " . $e->getMessage() . PHP_EOL);
 			if ($this->printHelpOnError) {
-				echo $this->Parser->getHelpText();
+				fwrite(self::$outputStream, $this->Parser->getHelpText());
 			}
-			return $e->getCode();
 		} catch (\Exception $e) {
-			echo "Program error: ", $e->getMessage(), PHP_EOL;
-			return $e->getCode();
+			fwrite(self::$errorStream, "Program error: " . $e->getMessage() . PHP_EOL);
 		}
+		return $e->getCode() ?: 1;
 	}
 }

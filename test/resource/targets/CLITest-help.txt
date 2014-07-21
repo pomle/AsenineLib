@@ -1,0 +1,5 @@
+Usage: /usr/bin/phpunit [-a STRING] [--longb NUM] [---extrac (yes|no)] [--longd]
+  -a                      Desc A.
+  -b/--longb              Desc B.
+  -c/--longc/---extrac    Desc C.
+  -d/--longd              Desc D.

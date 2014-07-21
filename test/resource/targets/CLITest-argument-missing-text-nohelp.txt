@@ -1,0 +1,1 @@
+Argument error: Missing required flag '-t/--text'.
