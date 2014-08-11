@@ -66,8 +66,8 @@ class FFMPEG extends Common\Root
 
 
 		$streams['interleave'] = array_values(preg_grep('%Duration:%', $returnData));
-		$streams['audio'] = array_values(preg_grep('%Stream #[0-9]\.[0-9](.*): Audio%', $returnData));
-		$streams['video'] = array_values(preg_grep('%Stream #[0-9]\.[0-9](.*): Video%', $returnData));
+		$streams['audio'] = array_values(preg_grep('%Stream #[0-9][\.:][0-9](.*): Audio%', $returnData));
+		$streams['video'] = array_values(preg_grep('%Stream #[0-9][\.:][0-9](.*): Video%', $returnData));
 
 		$time = null;
 		$duration = null;
