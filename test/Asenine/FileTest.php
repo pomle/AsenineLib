@@ -71,4 +71,44 @@ class FileTest extends PHPUnit_Framework_TestCase {
 		$this->assertFalse($File->exists()); // Dirs are not files to us.
 		rmdir($f1);
 	}
+
+	function testSendFile()
+	{
+		$File = new File(DIR_TEST_FILES . 'Text.txt');
+
+		ob_start();
+		$bytes = $File->sendToClient();
+		$contents = ob_get_clean();
+		$this->assertEquals('a7f17148f612d34daa3fea9af345574d', md5($contents));
+		$this->assertEquals(638, $bytes);
+	}
+
+	/**
+     * @expectedException     RuntimeException
+     * @expectedExceptionCode 0
+     */
+	function testSendFileFail()
+	{
+		$File = new File(DIR_TEST_FILES . 'Non-existing.file');
+		$File->sendToClient();
+	}
+
+	function testSendProxy()
+	{
+		$File = new File('http://www.google.com');
+		ob_start();
+		$bytes = $File->sendToClient();
+		$contents = ob_get_clean();
+		$this->assertTrue(strlen($contents) > 100);
+	}
+
+	/**
+     * @expectedException     RuntimeException
+     * @expectedExceptionCode 0
+     */
+	function testSendProxyFail()
+	{
+		$File = new File('http://a.website.that.does.not.exist/test.file');
+		$File->sendToClient();
+	}
 }

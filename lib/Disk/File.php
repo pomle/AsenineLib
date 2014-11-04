@@ -280,12 +280,9 @@ class File implements iFile
 
 	public function sendToClient($name = null, $contentType = null)
 	{
-		if (!$this->exists()) {
-			throw new \RuntimeException('File does not exist on disk.');
-		}
-
-		if (!$this->reads()) {
-			throw new \RuntimeException('File is not readable.');
+		$handle = @fopen($this->location, 'r');
+		if (false === $handle) {
+			throw new \RuntimeException('Open stream failed on ' . $this->location);
 		}
 
 		if (strlen($name) > 0) {
@@ -307,14 +304,14 @@ class File implements iFile
 		header('Content-Transfer-Encoding: binary');
 		header('Content-Type: ' . $contentType);
 
-		ob_clean();
 		flush();
 
-		$res = @readfile($this->getLocation());
-
-		if (false === $res) {
-			throw new \RuntimeException('File send failed.');
+		$bytes = @fpassthru($handle);
+		if (false === $bytes) {
+			throw new \RuntimeException('Read stream failed on ' . $this->location);
 		}
+
+		return $bytes;
 	}
 
 	public function writes()
