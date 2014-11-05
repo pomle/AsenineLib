@@ -166,8 +166,10 @@ class Connection
 	 */
 	public function rollback()
 	{
-		$this->PDO->rollBack();
-		$this->transactionLevel = 0;
+		if ($this->transactionLevel > 0) {
+			$this->PDO->rollBack();
+			$this->transactionLevel = 0;
+		}
 		return $this;
 	}
 
