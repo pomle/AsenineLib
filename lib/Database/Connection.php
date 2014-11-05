@@ -37,7 +37,7 @@ class Connection
 	public function begin()
 	{
 		if ($this->transactionLevel == 0) {
-			$this->getPDO()->beginTransaction();
+			$this->PDO->beginTransaction();
 		}
 		$this->transactionLevel++;
 		return $this;
@@ -53,7 +53,7 @@ class Connection
 	{
 		$this->transactionLevel--;
 		if ($this->transactionLevel == 0) {
-			$this->getPDO()->commit();
+			$this->PDO->commit();
 		}
 		return $this;
 	}
@@ -85,7 +85,7 @@ class Connection
 			return static::TYPE_NULL;
 		}
 
-		return $this->getPDO()->quote((string)$value);
+		return $this->PDO->quote((string)$value);
 	}
 
 	/**
@@ -132,7 +132,7 @@ class Connection
 	 */
 	public function lastInsertId($name = null)
 	{
-		return $this->getPDO()->lastInsertId($name);
+		return $this->PDO->lastInsertId($name);
 	}
 
 	/**
@@ -148,10 +148,10 @@ class Connection
 			echo preg_replace("%\s+%", " ", $query), "\n";
 		}
 
-		$Result = $this->getPDO()->query($query);
+		$Result = $this->PDO->query($query);
 
 		if (false === $Result) {
-			$errors = $this->getPDO()->errorInfo();
+			$errors = $this->PDO->errorInfo();
 			throw new \LogicException("Query failed: " . $errors[2] . ", " . $query);
 		}
 
@@ -166,7 +166,7 @@ class Connection
 	 */
 	public function rollback()
 	{
-		$this->getPDO()->rollBack();
+		$this->PDO->rollBack();
 		$this->transactionLevel = 0;
 		return $this;
 	}
