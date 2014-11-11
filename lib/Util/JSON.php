@@ -4,7 +4,7 @@
  */
 namespace Asenine\Util;
 
-class JSONException extends \Exception
+class JSONException extends \InvalidArgumentException
 {}
 
 class JSON
