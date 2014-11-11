@@ -106,9 +106,16 @@ class Select extends \Asenine\Database\Query
 		return $this;
 	}
 
-	public function join($table, $type = self::JOIN_INNER)
+	public function join()
 	{
-		$this->join[] = $type . ' JOIN ' . $table;
+		$args = func_get_args();
+		if (in_array(end($args), array(self::JOIN_OUTER, self::JOIN_INNER, self::JOIN_LEFT, self::JOIN_RIGHT))) {
+			$joinType = array_pop($args);
+		} else {
+			$joinType = self::JOIN_INNER;
+		}
+
+		$this->join[] = $joinType . ' JOIN ' . $this->prepare($args);
 		return $this;
 	}
 

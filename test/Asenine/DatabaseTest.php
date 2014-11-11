@@ -76,4 +76,32 @@ class DatabaseTest extends PHPUnit_Framework_TestCase {
 		try { $e = null; $sqliteQuery->prepare("SELECT * FROM test WHERE id IN %a", 'haaaalo');
 		} catch (\Exception $e) {} $this->assertInstanceOf('\InvalidArgumentException', $e);
 	}
+
+	function testSelectStatement()
+	{
+		$PDO = $this->getPDO();
+		$DB = new Connection\SQLite($PDO);
+
+		// Test magic join detection.
+		$Select = $DB->select('a, b, c, d, e')
+			->from('a_table a')
+			->join('b_table b ON b.value = %d', 1, 'LEFT')
+			->join('c_table c ON c.value = %d', 2, 'RIGHT')
+			->join('d_table d ON d.value = %d', 3, 'INNER')
+			->join('e_table e ON e.value = %d', 4, 'OUTER');
+
+		$this->assertEquals('SELECT a, b, c, d, e FROM a_table a LEFT JOIN b_table b ON b.value = 1 RIGHT JOIN c_table c ON c.value = 2 INNER JOIN d_table d ON d.value = 3 OUTER JOIN e_table e ON e.value = 4', (string)$Select);
+
+		// Test parameterization.
+		$Select = $DB->select('(a > %d) AS a_is_more', 10)
+			->from('a_table AS a')
+			->join('b_table AS b ON a.id = b.id AND a.size > %d', 20)
+			->where('b.name = %s', 'foobar')
+			->where('b.time > %t', new \DateTime('2014-01-01'))
+			->group('a.id')
+			->having('SUM(a.value) > %f', .5)
+			->limit(5, 10);
+
+		$this->assertEquals("SELECT (a > 10) AS a_is_more FROM a_table AS a INNER JOIN b_table AS b ON a.id = b.id AND a.size > 20 WHERE b.name = 'foobar' AND b.time > '2014-01-01 00:00:00' GROUP BY a.id HAVING SUM(a.value) > 0.500000 OFFSET 5 LIMIT 10", (string)$Select);
+	}
 }
