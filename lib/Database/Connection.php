@@ -184,7 +184,7 @@ class Connection
 	public function select()
 	{
 		$Select = new Query\Select($this);
-		$Select->cols(func_get_args());
+		call_user_func_array(array($Select, 'cols'), func_get_args());
 		return $Select;
 	}
 

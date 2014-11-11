@@ -84,13 +84,13 @@ class Select extends \Asenine\Database\Query
 
 	public function cols($cols)
 	{
-		$this->cols = array_merge($this->cols, is_array($cols) ? $cols : func_get_args());
+		$this->cols[] = $this->prepare(func_get_args());
 		return $this;
 	}
 
 	public function from($from)
 	{
-		$this->from[] = trim($from);
+		$this->from[] = $this->prepare(func_get_args());
 		return $this;
 	}
 
