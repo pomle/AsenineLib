@@ -6,6 +6,9 @@
  */
 namespace Asenine\Disk;
 
+use InvalidArgumentException;
+use RuntimeException;
+
 interface iFile
 {
 	public function __construct($location, $size = null, $mime = null, $name = null, $hash = null);
@@ -27,7 +30,7 @@ class File implements iFile
 
 		try {
 			if (empty($fromURL)) {
-				throw new \InvalidArgumentException('URL empty.');
+				throw new InvalidArgumentException('URL empty.');
 			}
 
 			if (!$toFile) {
@@ -35,11 +38,11 @@ class File implements iFile
 			}
 
 			if (!$d = @fopen($toFile, 'w')) {
-				throw new \RuntimeException(sprintf('Could not open destination "%s" for writing', $toFile));
+				throw new RuntimeException(sprintf('Could not open destination "%s" for writing', $toFile));
 			}
 
 			if (!$s = @fopen($fromURL, 'r')) {
-				throw new \RuntimeException(sprintf('Could not open source "%s" for reading', $fromURL));
+				throw new RuntimeException(sprintf('Could not open source "%s" for reading', $fromURL));
 			}
 
 			$bufferSize = 512 * 16;
@@ -90,10 +93,10 @@ class File implements iFile
 	{
 		switch ($phpfile['error']) {
 			case UPLOAD_ERR_INI_SIZE:
-				throw new \RuntimeException('Uploaded file too large for the webserver');
+				throw new RuntimeException('Uploaded file too large for the webserver');
 
 			case UPLOAD_ERR_NO_TMP_DIR:
-				throw new \RuntimeException('No temporary storage available');
+				throw new RuntimeException('No temporary storage available');
 		}
 
 		$File = new static($phpfile['tmp_name'], $phpfile['size'], $phpfile['type'], $phpfile['name']);
@@ -110,7 +113,7 @@ class File implements iFile
 
 		### File size can only be integer and must not be negative
 		if (!is_null($size) && !is_int($size)) {
-			throw new \InvalidArgumentException("Size must be integer");
+			throw new InvalidArgumentException("Size must be integer");
 		}
 
 		$this->name = $name ?: basename($this->location);
@@ -153,7 +156,7 @@ class File implements iFile
 	public function copy($to)
 	{
 		if (!copy($this->location, $to)) {
-			throw new \RuntimeException(sprintf('File copy from "%s" to "%s" failed', $this->location, $to));
+			throw new RuntimeException(sprintf('File copy from "%s" to "%s" failed', $this->location, $to));
 		}
 
 		$File_New = clone $this;
@@ -165,7 +168,7 @@ class File implements iFile
 	public function delete()
 	{
 		if (!unlink($this->location)) {
-			throw new \RuntimeException(sprintf('File delete from "%s" failed', $this->location));
+			throw new RuntimeException(sprintf('File delete from "%s" failed', $this->location));
 		}
 
 		return true;
@@ -179,7 +182,7 @@ class File implements iFile
 	public function link($at)
 	{
 		if (!symlink($this->location, $at)) {
-			throw new \RuntimeException(sprintf('File symlinking from "%s" to "%s" failed', $this->location, $at));
+			throw new RuntimeException(sprintf('File symlinking from "%s" to "%s" failed', $this->location, $at));
 		}
 
 		$File_Link = clone $this;
@@ -191,7 +194,7 @@ class File implements iFile
 	public function move($to)
 	{
 		if (!rename($this->location, $to)) {
-			throw new \RuntimeException(sprintf('File move from "%s" to "%s" failed', $this->location, $to));
+			throw new RuntimeException(sprintf('File move from "%s" to "%s" failed', $this->location, $to));
 		}
 
 		$this->location = $to;
@@ -282,7 +285,7 @@ class File implements iFile
 	{
 		$handle = @fopen($this->location, 'r');
 		if (false === $handle) {
-			throw new \RuntimeException('Open stream failed on ' . $this->location);
+			throw new NotFoundException('Open stream failed on ' . $this->location);
 		}
 
 		if (strlen($name) > 0) {
@@ -308,7 +311,7 @@ class File implements iFile
 
 		$bytes = @fpassthru($handle);
 		if (false === $bytes) {
-			throw new \RuntimeException('Read stream failed on ' . $this->location);
+			throw new RuntimeException('Read stream failed on ' . $this->location);
 		}
 
 		return $bytes;

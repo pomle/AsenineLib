@@ -84,7 +84,7 @@ class FileTest extends PHPUnit_Framework_TestCase {
 	}
 
 	/**
-     * @expectedException     RuntimeException
+     * @expectedException     Asenine\Disk\NotFoundException
      * @expectedExceptionCode 0
      */
 	function testSendFileFail()
@@ -103,7 +103,7 @@ class FileTest extends PHPUnit_Framework_TestCase {
 	}
 
 	/**
-     * @expectedException     RuntimeException
+     * @expectedException     Asenine\Disk\NotFoundException
      * @expectedExceptionCode 0
      */
 	function testSendProxyFail()
